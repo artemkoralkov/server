@@ -1,0 +1,6 @@
+fastapi
+openpyxl
+python-multipart
+SQLAlchemy
+uvicorn
+requests
