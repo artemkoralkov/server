@@ -1,14 +1,11 @@
-"""Desribe of module"""
 import os
-from re import TEMPLATE
-from typing import List
-from fastapi import Depends, FastAPI, UploadFile, File, Request, Form
+from typing import List, Literal
+from fastapi import Depends, FastAPI, UploadFile, File, Request, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 
 from sqlalchemy.orm import Session
 
-from starlette.responses import HTMLResponse
 import crud
 import models
 import schemas
@@ -21,7 +18,8 @@ models.Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory='./templates')
 app = FastAPI()
 
-origins = ['http://localhost:3000', 'https://mspu-schedule.netlify.app', 'https://web.postman.co']
+origins: list[str] = ['http://localhost:3000',
+                      'https://mspu-schedule.netlify.app', 'https://web.postman.co']
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -30,8 +28,8 @@ app.add_middleware(
 )
 
 
-FACULTIES = {'dino': 'ДиНО', 'fif': 'ФИФ',  
-             'ffk': 'ФФК', 'ff': 'ФФ', 'tbf': 'ТБФ'}
+FACULTIES: dict[str, str] = {'dino': 'ДиНО', 'fif': 'ФИФ',
+                             'ffk': 'ФФК', 'ff': 'ФФ', 'tbf': 'ТБФ'}
 
 
 # Dependency
@@ -51,13 +49,16 @@ async def index(request: Request):
         {'request': request}
     )
 
+
 @app.delete('/teachers/{teacher_id}', status_code=204)
-async def delete_teacher(teacher_id, db: Session=Depends(get_db)):
+async def delete_teacher(teacher_id, db: Session = Depends(get_db)):
     return crud.delete_teacher(db, teacher_id)
 
-@app.post('/teachers/add_teachers/')
-async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session=Depends(get_db)):
-    return crud.add_teachers(db, teachers)
+
+@app.post('/teachers/add_teachers/', response_model=list[schemas.Teacher])
+async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session = Depends(get_db)) -> list[schemas.Teacher]:
+    return await crud.add_teachers(db, teachers)
+
 
 @app.get('/teachers/add_teacher')
 async def add_teacher(request: Request):
@@ -69,28 +70,22 @@ async def add_teacher(request: Request):
         }
     )
 
+
 @app.post('/teachers/add_teacher')
-async def add_teacher(request: Request, teacher_name=Form(...), faculty=Form(...), db: Session=Depends(get_db)):
-    teacher = {
-        'teacher_name': teacher_name,
-        'faculty': faculty
-        }
-    
+async def add_teacher(
+        request: Request, teacher_name: str = Form(...), faculty: str = Form(...), db: Session = Depends(get_db)
+):
+    db_teacher = crud.get_teacher_by_name(db, teacher_name)
+    if db_teacher:
+        raise HTTPException(status_code=400, detail="Teacher is already exist")
+
+    teacher: schemas.TeacherCreate = schemas.TeacherCreate(teacher_name=teacher_name, faculty=faculty)
     return crud.add_teacher(db, teacher)
+
 
 @app.get('/upload_excel_schedule/', status_code=200)
 async def upload_excel_schedule_form(request: Request, faculty):
     """Generate HTML form for upload .xlsx file with schedule to server"""
-    content = f"""
-        <body>
-        <p> {FACULTIES[faculty]} </p>
-        <form action="/upload_excel_schedule/?faculty={faculty}" enctype="multipart/form-data" method="post">
-        <input name="file" type="file">
-        <input type="submit">
-        </form>
-        </form>
-        </body>
-    """
     return templates.TemplateResponse(
         'upload_excel_form.html',
         {
@@ -105,9 +100,9 @@ async def upload_excel_schedule_form(request: Request, faculty):
 async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Session = Depends(get_db)):
     with open(file.filename, 'wb+') as file_object:
         file_object.write(file.file.read())
-    lessons = excel_to_json(file.filename)
+    schedule = excel_to_json(file.filename)
     os.remove(file.filename)
-    return crud.upload_excel_schedule(db, lessons, FACULTIES[faculty])
+    return crud.upload_excel_schedule(db, schedule, FACULTIES[faculty])
 
 
 @app.get('/lessons/', status_code=200)
@@ -129,31 +124,34 @@ async def get_groups_by_faculty(faculty='', db: Session = Depends(get_db)):
 
 
 @app.get('/teachers/')
-async def get_teachers(faculty='', db=Depends(get_db)):
+async def get_teachers(faculty='', db=Depends(get_db)) -> list[schemas.Teacher]:
     if faculty:
-        result = crud.get_teachers_by_faculty(db, FACULTIES[faculty])
+        return crud.get_teachers_by_faculty(db, FACULTIES[faculty])
     elif not faculty:
-        result = crud.get_teachers(db)
-    return result
+        return crud.get_teachers(db)
 
 
 @app.get('/faculties/')
 async def get_faculties():
     return
 
+
 @app.post('/lessons')
-async def add_lesson(lesson: Request, db=Depends(get_db)):
-    lesson = await lesson.json() 
+async def add_lesson(json_lesson: Request, db=Depends(get_db)):
+    lesson: schemas.LessonCreate = await json_lesson.json()
     return crud.add_lesson(db, lesson)
 
+
 @app.put('/lessons/{lesson_id}')
-async def edit_lesson(lesson_id, lesson: Request, db=Depends(get_db)):
-    lesson = await lesson.json() 
+async def edit_lesson(lesson_id, incoming_lesson: Request, db=Depends(get_db)):
+    lesson: dict[str, str] = await incoming_lesson.json()
     return crud.edit_lesson(db, lesson_id, lesson)
+
 
 @app.delete('/lessons/{lesson_id}')
 def delete_lesson(lesson_id, db=Depends(get_db)):
     return crud.delete_lesson(db, lesson_id)
+
 
 @app.get('/delete_duplicate_teachers')
 async def delete_duplicate_teachers(db=Depends(get_db)):

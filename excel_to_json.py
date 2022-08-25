@@ -1,281 +1,278 @@
-import re
-import json
-from typing import Dict
-
 from openpyxl.utils import get_column_letter
-
-
 from openpyxl.reader.excel import load_workbook
+import json
 
 
-def split(a, n):
+def split_list_by_parts(lst: list, parts: int) -> list:
+    k, m = divmod(len(lst), parts)
+    return [lst[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(parts)]
 
-    k, m = divmod(len(a), n)
-    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
+def get_merged_cell_value(sheet, cell) -> str:
+    rng = [s for s in sheet.merged_cells.ranges if cell.coordinate in s]
+    return sheet.cell(rng[0].min_row, rng[0].min_col).value if len(rng) != 0 else cell.value
 
 
-def lesson_to_dict(lesson: str) -> Dict:
-    """
-    Keyword arguments:
-    argument -- description
-    Return: return_description
-    """
-    result = {}
-    while True:
-        if lesson is None:
-            result = {'lesson': None}
-            break
-        lesson_split_by_spaces = lesson.split(' ')
-        if lesson_split_by_spaces[0] == 'Физическая':
-            lesson_split_by_enters = lesson.split('\n')
-            teachers = (
-                lesson_split_by_enters[1] + lesson_split_by_enters[2]).split(',')
-            result = {'lesson_name': ''.join(
-                lesson_split_by_enters[0]), 'lesson_teacher': teachers}
-            break
-        if '\n' in lesson:
-            lesson = lesson.replace('\n', ' ')
-        lesson = re.sub("\s{2,}", " ", lesson)
-        if '+' in lesson:
-            lesson = lesson.replace('+', ' + ')
-            lesson_split_by_plus = lesson.split(' + ')
-            lesson_split_by_plus = list(
-                map(lambda s: s.strip(), lesson_split_by_plus))
-            lesson_name_and_lesson_type = lesson_split_by_plus[0]
-            if '(' not in lesson:
-                lesson_name = lesson_name_and_lesson_type[0]
-                lesson_type = ''
-            else:
-                
-                lesson_name = lesson_name_and_lesson_type.split('(')[0]
-                lesson_type = lesson_name_and_lesson_type.split('(')[1].split(')')[
-                    0]
-            lesson_teacher_and_faculty = lesson_split_by_plus[1]
-            lesson_name = f'{lesson_name.strip()} + {lesson_teacher_and_faculty.split(" ")[0]}'
-            lesson_teacher = ' '.join(
-                lesson_teacher_and_faculty.split(' ')[1:])
-            result = {'lesson_name': lesson_name.strip(), 'lesson_teacher': lesson_teacher.strip(),
-                      'lesson_type': lesson_type.strip()}
-            
-            break
+def is_merged_sell(cell) -> bool:
+    return type(cell).__name__ == 'MergedCell'
 
-        if '(' not in lesson:
-            if '\n' not in lesson:
-                space_indexies = [m.start() for m in re.finditer(' ', lesson)]
-                result = {'lesson_name': lesson[:space_indexies[-3] + 1],
-                          'lesson_teacher': lesson[space_indexies[-3] + 1:]}
+
+def lesson_to_dict(lesson: str, group_number: int | None = None) -> dict[str, str | list[str]] | dict:
+    if lesson is None:
+        return {'lesson': None}
+    elif 'СМГ' in lesson:
+        if lesson.count('\n') > 1:
+            lesson = lesson[::-1].replace('\n', ' ', 1)[::-1]
+        lesson_name, teachers = lesson.split('\n')
+        teachers = teachers.split(', ')
+        if [teachers.index(i) for i in teachers if 'СМГ' in i][0] == 0:
+            teachers = teachers[::-1]
+        return {
+            'lesson_title': 'Физическая культура',
+            'teacher_name': f'{teachers[group_number - 1]}, {teachers[-1]}'
+        }
+    else:
+        positions = ('пр.-ст.', 'ст.пр.', 'пр.', 'доц.', 'проф.')
+        position_index = 1
+        lesson = lesson.replace('\n', ' ')
+        for position in positions:
+            position_index = lesson.find(position)
+            if position_index != -1:
                 break
-            else:
-                split_lesson = lesson.split(' ')
-                result = {'lesson_name': split_lesson[0].strip(
-                ), 'lesson_teacher': split_lesson[1].strip()}
-                break
-
-        split_lesson = lesson.split('(')
-        if len(split_lesson) > 2:
-            indx = lesson.rfind('(')
-            lesson_name = lesson[:indx]
-            split_lesson = lesson[indx + 1:].split(')')
-            lesson_type = split_lesson[0]
-            lesson_teacher = split_lesson[1]
-            result = {'lesson_name': lesson_name.strip(), 'lesson_teacher': lesson_teacher.strip(),
-                      'lesson_type': lesson_type.strip()}
-            break
-        lesson_name = split_lesson[0]
-        split_lesson = split_lesson[1].split(')')
-        lesson_type = split_lesson[0]
-        lesson_teacher = split_lesson[1]
-        if '\n' in lesson_teacher:
-            tmp = lesson_teacher.split('\n')
-            lesson_teacher = tmp[1]
-            lesson_name += tmp[0]
-        result = {'lesson_name': lesson_name.strip(), 'lesson_teacher': lesson_teacher.strip(),
-                  'lesson_type': lesson_type.strip()}
-        break
-    return result
+        lesson_name = lesson[:position_index].strip()
+        lesson_teacher = lesson[position_index:].strip()
+        left_bracket_index = lesson_name.rfind('(')
+        right_bracket_index = lesson_name.rfind(')')
+        lesson_types = (
+            'ЛК', 'ПЗ/СЗ', 'СЗ', 'СЗ/ЛЗ', 'ЛК/ПЗ', 'ПЗ', ' Л К ', 'ЛК/СЗ', '  Л  К  ', 'лк', 'пр', 'лб', 'сз',
+            'лк/пр', 'пз'
+        )
+        lesson_type = ''
+        if lesson_name[left_bracket_index + 1: right_bracket_index] in lesson_types:
+            lesson_type = lesson_name[left_bracket_index + 1: right_bracket_index]
+    return {
+        'lesson_title': lesson_name.replace(f'({lesson_type})', '').strip(),
+        'teacher_name': lesson_teacher,
+        'lesson_type': lesson_type.strip().replace(' ', '').replace('  ', '')
+    }
 
 
-def excel_to_json(filename):
-    """sumary_line
-    Take excel file with schedule and make from it list
-    Keyword arguments:
-    filename -- name of excel file
-    Return list of all lessons grabed from excel file
-    """
-
-    wb = load_workbook(filename=filename)
+def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
+    wb = load_workbook(filename)
     ws = wb.active
     schedule = {}
     course_numbers = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5}
 
-    c = 0
-    n = 4
-    while True:
-
-        if ws[get_column_letter(n) + '3'].value is None:
-            break
-        n += 3
-
-    for i in range(4, n, 3):
-        current_group = ws[get_column_letter(i) + '3'].value.split('\n')
-        if ws[get_column_letter(i) + '2'].value is not None:
-            current_group = f'{course_numbers[ws[get_column_letter(i) + "2"].value.strip()]}/{current_group[0]} {current_group[1]}'
-        else:
-            tmp = i
-            while True:
-                if tmp < 4:
-                    break
-                if ws[get_column_letter(tmp) + '2'].value is not None:
-                    current_group = f'{course_numbers[ws[get_column_letter(tmp) + "2"].value.strip()]}/{current_group[0]} {current_group[1]}'
-                    break
-                tmp -= 3
+    column = 4
+    # print('P4' in ws.merged_cells and 'Q4' in ws.merged_cells)
+    while ws[get_column_letter(column) + '3'].value:
+        group_number, speciality = list(map(lambda e: e.strip(), ws[get_column_letter(column) + '3'].value.split('\n')))
+        course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + '2'])
+        current_group = f'{course_numbers[course_number]}/{group_number} {speciality}'
         schedule[current_group] = []
-        for j in range(4, 74):
-            tmp = i - 1
-            tmp_lesson = ''
-            if i > 4 and ws[get_column_letter(i) + str(j)].value is None and type(
-                    ws[get_column_letter(tmp) + str(j)]).__name__ == 'MergedCell' and j % 2 == 0:
-                while True:
-                    tmp -= 3
-                    if tmp < 1:
-                        break
-                    if ws[get_column_letter(tmp + 1) + str(j)].value is not None:
-                        tmp_lesson = lesson_to_dict(
-                            ws[get_column_letter(tmp + 1) + str(j)].value)
-                        break
-                if type(ws[get_column_letter(i) + str(j + 1)]).__name__ == 'MergedCell':
-                    if type(ws[get_column_letter(tmp + 1) + str(j + 1)]).__name__ != 'MergedCell':
-                        schedule[current_group].append([{
-                        'numerator': True,
-                        **tmp_lesson
-                    },
-                        {'denominator': True, **lesson_to_dict(
-                            ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
-                    ])
+        for row in range(4, 74, 2):
+            upper_left_cell = ws[get_column_letter(column) + str(row)]
+            upper_right_cell = ws[get_column_letter(column + 1) + str(row)]
+            bottom_left_cell = ws[get_column_letter(column) + str(row + 1)]
+            bottom_right_cell = ws[get_column_letter(column + 1) + str(row + 1)]
+            if is_merged_sell(upper_right_cell) and \
+                    is_merged_sell(bottom_left_cell) and \
+                    is_merged_sell(bottom_right_cell):
+                if is_merged_sell(upper_left_cell):
+                    if get_merged_cell_value(ws, upper_left_cell) != get_merged_cell_value(ws, bottom_left_cell):
+                        schedule[current_group].append([
+                            {
+                                'numerator': True,
+                                **lesson_to_dict(get_merged_cell_value(ws, upper_left_cell))
+                            },
+                            {
+                                'denominator': True,
+                                **lesson_to_dict(get_merged_cell_value(ws, bottom_left_cell))
+                            },
+                        ])
                     else:
-                        schedule[current_group].append(tmp_lesson)
-                    
+                        schedule[current_group].append(
+                            lesson_to_dict(get_merged_cell_value(ws, upper_left_cell), int(group_number[0]))
+                        )
+                elif get_merged_cell_value(ws, upper_left_cell) != get_merged_cell_value(ws, bottom_left_cell):
+                    schedule[current_group].append([
+                        {
+                            'numerator': True,
+                            **lesson_to_dict(upper_left_cell.value)
+                        },
+                        {
+                            'denominator': True,
+                            **lesson_to_dict(get_merged_cell_value(ws, bottom_left_cell))
+                        },
+                    ])
                 else:
-                    schedule[current_group].append([{
+                    schedule[current_group].append(
+                        lesson_to_dict(upper_left_cell.value, int(group_number[0]))
+                    )
+            elif not is_merged_sell(upper_right_cell) and \
+                    not is_merged_sell(bottom_left_cell) and \
+                    not is_merged_sell(bottom_right_cell):
+                schedule[current_group].append([
+                    {
                         'numerator': True,
-                        **tmp_lesson
+                        'first_group': True,
+                        **lesson_to_dict(upper_left_cell.value)
                     },
-                        {'denominator': True, **lesson_to_dict(
-                            ws[get_column_letter(i) + str(j + 1)].value)}
+                    {
+                        'numerator': True,
+                        'second_group': True,
+                        **lesson_to_dict(upper_right_cell.value)
+                    },
+                    {
+                        'denominator': True,
+                        'first_group': True,
+                        **lesson_to_dict(bottom_left_cell.value)
+                    },
+                    {
+                        'denominator': True,
+                        'second_group': True,
+                        **lesson_to_dict(bottom_right_cell.value)
+                    },
+                ])
+            elif not is_merged_sell(upper_left_cell) and \
+                    is_merged_sell(bottom_right_cell):
+                if not is_merged_sell(upper_right_cell) and \
+                        is_merged_sell(bottom_left_cell):
+                    schedule[current_group].append([
+                        {
+                            'first_group': True,
+                            **lesson_to_dict(upper_left_cell.value)
+                        },
+                        {
+                            'second_group': True,
+                            **lesson_to_dict(upper_right_cell.value)
+                        },
                     ])
-                    
-                continue
-
-            if type(ws[get_column_letter(i) + str(j)]).__name__ == 'MergedCell':
-                continue
+                elif not is_merged_sell(upper_right_cell) and \
+                        not is_merged_sell(bottom_left_cell):
+                    schedule[current_group].append([
+                        {
+                            'first_group': True,
+                            'numerator': True,
+                            **lesson_to_dict(upper_left_cell.value)
+                        },
+                        {
+                            'second_group': True,
+                            'numerator': True,
+                            **lesson_to_dict(bottom_left_cell.value)
+                        },
+                        {
+                            'second_group': True,
+                            **lesson_to_dict(upper_right_cell.value)
+                        },
+                    ])
+                elif is_merged_sell(upper_right_cell) and \
+                        not is_merged_sell(bottom_left_cell):
+                    schedule[current_group].append([
+                        {
+                            'numerator': True,
+                            **lesson_to_dict(upper_left_cell.value)
+                        },
+                        {
+                            'denominator': True,
+                            **lesson_to_dict(bottom_left_cell.value)
+                        },
+                    ])
+            elif is_merged_sell(upper_right_cell) and \
+                    not is_merged_sell(bottom_left_cell) and \
+                    not is_merged_sell(bottom_right_cell):
+                schedule[current_group].append([
+                    {
+                        'numerator': True,
+                        **lesson_to_dict(upper_left_cell.value)
+                    },
+                    {
+                        'denominator': True,
+                        'first_group': True,
+                        **lesson_to_dict(bottom_left_cell.value)
+                    },
+                    {
+                        'denominator': True,
+                        'second_group': True,
+                        **lesson_to_dict(bottom_right_cell.value)
+                    },
+                ])
+            elif is_merged_sell(bottom_right_cell) and \
+                    not is_merged_sell(upper_left_cell) and \
+                    not is_merged_sell(upper_right_cell):
+                schedule[current_group].append([
+                    {
+                        'numerator': True,
+                        'first_group': True,
+                        **lesson_to_dict(upper_left_cell.value)
+                    },
+                    {
+                        'numerator': True,
+                        'second_group': True,
+                        **lesson_to_dict(upper_right_cell.value)
+                    },
+                    {
+                        'denominator': True,
+                        **lesson_to_dict(bottom_left_cell.value)
+                    },
+                ])
+            elif is_merged_sell(upper_left_cell) and \
+                    is_merged_sell(bottom_right_cell) and \
+                    not is_merged_sell(bottom_left_cell):
+                schedule[current_group].append([
+                    {
+                        'numerator': True,
+                        **lesson_to_dict(get_merged_cell_value(ws, upper_left_cell))
+                    },
+                    {
+                        'denominator': True,
+                        **lesson_to_dict(bottom_left_cell.value)
+                    },
+                ])
+            elif is_merged_sell(bottom_left_cell) and \
+                    not is_merged_sell(upper_right_cell) and \
+                    not is_merged_sell(bottom_right_cell):
+                schedule[current_group].append([
+                    {
+                        'first_group': True,
+                        **lesson_to_dict(upper_left_cell.value)
+                    },
+                    {
+                        'numerator': True,
+                        'second_group': True,
+                        **lesson_to_dict(upper_right_cell.value)
+                    },
+                    {
+                        'denominator': True,
+                        'second_group': True,
+                        **lesson_to_dict(bottom_right_cell.value)
+                    },
+                ])
             else:
-                if j % 2 == 0:
-                    if ws[get_column_letter(i) + str(j + 1)].value is None and type(
-                            ws[get_column_letter(i) + str(j + 1)]).__name__ == 'MergedCell':
-                        tmp = i - 1
-                        if i > 4 and ws[get_column_letter(i) + str(j + 1)].value is None and type(
-                                ws[get_column_letter(tmp) + str(j + 1)]).__name__ == 'MergedCell':
-                            while True:
-                                tmp -= 3
-                                if tmp < 1:
-                                    break
-                                if ws[get_column_letter(tmp + 1) + str(j + 1)].value is not None:
-                                    if type(ws[get_column_letter(i) + str(j)]).__name__ != 'MergedCell' and \
-                                        type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell':
-                                        schedule[current_group].append([
-                                            {'numerator': True, 'first_group': True, **lesson_to_dict(
-                                                ws[get_column_letter(i) + str(j)].value)},
-                                            {'numerator': True, 'second_group': True, **lesson_to_dict(
-                                            ws[get_column_letter(i + 1) + str(j)].value)},
-                                            {'denominator': True, **lesson_to_dict(
-                                                ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
-                                        ])
-                                        break
-                                    else:    
-                                        schedule[current_group].append([
-                                            {'numerator': True, **lesson_to_dict(
-                                                ws[get_column_letter(i) + str(j)].value)},
-                                            {'denominator': True, **lesson_to_dict(
-                                                ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
-                                        ])
-                                        break
-                            continue
-                        if type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell':
-                            if type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ != 'MergedCell' and \
-                                ws[get_column_letter(i + 1) + str(j + 1)].value is not None:
-                                schedule[current_group].append([
-                                    {'first_group': True, **
-                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                    {'second_group': True, 'numerator': True, **
-                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)},
-                                    {'second_group': True, 'denominator': True, **
-                                    lesson_to_dict(ws[get_column_letter(i + 1) + str(j + 1)].value)}
-                                ])
-                            else:
-                                schedule[current_group].append([
-                                    {'first_group': True, **
-                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                    {'second_group': True, **
-                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)}
-                                ])
-                        else:
-                            schedule[current_group].append(lesson_to_dict(
-                                ws[get_column_letter(i) + str(j)].value))
-                    else:
-                        if type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell' and \
-                        type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ != 'MergedCell' and \
-                        type(ws[get_column_letter(i) + str(j + 1)]).__name__ != 'MergedCell':
-                            schedule[current_group].append([
-                                {'numerator': True, 'first_group': True, **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                {'numerator': True, 'second_group': True, **
-                                    lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)},
-                                {'denominator': True, 'first_group': True, **lesson_to_dict(
-                                    ws[get_column_letter(i) + str(j + 1)].value)},
-                                {'denominator': True, 'second_group': True,  **lesson_to_dict(ws[
-                                    get_column_letter(
-                                        i + 1) + str(
-                                        j + 1)].value)}
-                            ])
-                        elif type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell' and \
-                        type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ == 'MergedCell':
-                            if f'{get_column_letter(i + 1) + str(j)}:{get_column_letter(i + 1) + str(j + 1)}' in list(map(lambda e: str(e), ws.merged_cells.ranges)):
-                                # print(get_column_letter(i) + str(j))
-                                schedule[current_group].append([
-                                    {'numerator': True, 'first_group': True, **
-                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                    {'denominator': True, 'first_group': True, **
-                                        lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)},
-                                    {'second_group': True,  **
-                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)}
-                                ])
-                            else:
-                                
-                                schedule[current_group].append([
-                                    {'numerator': True, 'first_group': True, **
-                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                    {'numerator': True, 'second_group': True, **
-                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)},
-                                    {'denominator': True,  **
-                                        lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)}
-                                ])
-                        elif type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ != 'MergedCell'\
-                         and type(ws[get_column_letter(i + 1) + str(j)]).__name__ == 'MergedCell':
-                            schedule[current_group].append([
-                                {'numerator': True, **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                {'denominator': True, 'first_group': True, **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)},
-                                {'denominator': True, 'second_group': True, **lesson_to_dict(ws[get_column_letter(i + 1) + str(j + 1)].value)}])
-                        else:
-                            schedule[current_group].append([
-                                {'numerator': True, **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                {'denominator': True, **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)}
-                            ])
-        schedule[current_group] = list(split(schedule[current_group], 6))
-    # print()
+                print('-----')
+                print(get_column_letter(column) + str(row))
+                print(upper_left_cell.value, upper_right_cell.value, bottom_left_cell.value, bottom_right_cell.value)
+                print('-----')
+                schedule[current_group].append(None)
+        column += 3
+        schedule[current_group] = split_list_by_parts(schedule[current_group], 6)
     return schedule
-# with open('shcedule.json', 'w', encoding='utf-8') as fp:
-#     json.dump(excel_to_json("E:\work\Копия raspis_FIF__I_semestr_2022-2023.xlsx"), fp, ensure_ascii=False, indent=4)
+
+# lessons = excel_to_json("B:/Downloads/raspis_FIF__I_semestr_2022-2023.xlsx")
+# with open('schedule.json', 'r', encoding='utf-8') as file:
+#     schedule = json.load(file)
+
+
+# print(
+#     lesson_to_dict("Физическая культура\nпр. Федорович В.К., пр. Таргонский Н.Н., пр. Маслова Е.А.,\nСМГ Болбас Е.В.")
+# )
+# with open('schedule.json', 'w', encoding='utf-8') as file:
+#     json.dump(
+#         excel_to_json("B:/Downloads/raspis_FIF__I_semestr_2022-2023.xlsx"),
+#         file,
+#         ensure_ascii=False,
+#         indent=4
+#     )
+# print(''.join("Ф   и   з   и   ч   е   с   к   а   я      к   у   л   ь   т   у   р   а".split()).replace('я', 'я '))
+string = 'ст.пр. Дранец В.Ф. (СМГ), пр. Блоцкая Ю.В., пр. Глебова Л.А., ст.пр. Борисок А.А.'
+print([string.split(', ').index(i) for i in string.split(', ') if 'СМГ' in i][0])

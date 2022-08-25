@@ -1,10 +1,7 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 
 class LessonBase(BaseModel):
-    
     lesson_title: str
     group_name: str
     teacher_name: str
@@ -12,14 +9,15 @@ class LessonBase(BaseModel):
     lesson_type: str
     day: int
     lesson_number: int
-    numerator: Optional[bool] = False
-    denominator: Optional[bool] = False
-    first_group: Optional[bool] = False
-    second_group: Optional[bool] = False
+    numerator: bool = False
+    denominator:bool = False
+    first_group: bool = False
+    second_group: bool = False
 
 
 class LessonCreate(LessonBase):
     pass
+
 
 class Lesson(LessonCreate):
     id: str
@@ -29,7 +27,6 @@ class Lesson(LessonCreate):
 
 
 class TeacherBase(BaseModel):
-   
     teacher_name: str
     faculty: str
 
@@ -40,5 +37,6 @@ class TeacherCreate(TeacherBase):
 
 class Teacher(TeacherBase):
     id: str
+
     class Config:
         orm_mode = True
