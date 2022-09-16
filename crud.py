@@ -159,16 +159,14 @@ def get_teachers(db: Session):
 
 def add_teachers(db: Session, teachers: List[schemas.TeacherCreate]):
     for teacher in teachers:
-        tmp_teacher.id =  str(uuid4())
-        tmp_teacher = models.Teacher(**teacher.dict())
+        tmp_teacher = models.Teacher('id': str(uuid4()), **teacher.dict())
         db.add(tmp_teacher)
         db.commit()
         db.refresh(tmp_teacher)
 
 
 def add_teacher(db: Session, teacher: schemas.TeacherCreate):
-    tmp_teacher.id = str(uuid4())
-    tmp_teacher = models.Teacher(**teacher.dict())
+    tmp_teacher = models.Teacher('id': str(uuid4()), **teacher.dict())
     db.add(tmp_teacher)
     db.commit()
     db.refresh(tmp_teacher)
