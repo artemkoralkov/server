@@ -29,7 +29,7 @@ class Lesson(LessonCreate):
 
 
 class TeacherBase(BaseModel):
-    id: str
+   
     teacher_name: str
     faculty: str
 
@@ -39,7 +39,7 @@ class TeacherCreate(TeacherBase):
 
 
 class Teacher(TeacherBase):
-    
+     id: str
 
     class Config:
         orm_mode = True

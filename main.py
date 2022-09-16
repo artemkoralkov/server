@@ -19,8 +19,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-origins = ["http://localhost:3000",]
-
+origins = ['http://localhost:3000', 'https://mspu-schedule.netlify.app/']
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
