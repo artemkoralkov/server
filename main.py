@@ -1,7 +1,7 @@
 """Desribe of module"""
 import os
 from typing import List
-from fastapi import Depends, FastAPI, UploadFile, File, Request, status_code
+from fastapi import Depends, FastAPI, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
