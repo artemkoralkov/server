@@ -42,7 +42,7 @@ def get_db():
         db.close()
 
 
-@app.get('/teachers/delete_teacher', status_code=200)
+@app.delete('/teachers/delete_teacher', status_code=204)
 async def delete_teacher(teacher_id, db: Session=Depends(get_db)):
     crud.delete_teacher(db, teacher_id)
 
