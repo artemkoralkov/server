@@ -229,4 +229,5 @@ def excel_to_json(filename):
                                     lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)}
                             ])
         schedule[current_group] = list(split(schedule[current_group], 6))
+        print(schedule)
     return schedule

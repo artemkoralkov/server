@@ -39,7 +39,6 @@ class TeacherCreate(TeacherBase):
 
 
 class Teacher(TeacherBase):
-     id: str
-
+    id: str
     class Config:
         orm_mode = True
