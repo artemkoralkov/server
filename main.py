@@ -47,11 +47,11 @@ async def delete_teacher(teacher_id, db: Session=Depends(get_db)):
     crud.delete_teacher(db, teacher_id)
 
 
-@app.post('/teachers/add_teachers/', status_code=201)
+@app.post('/teachers/add_teachers/')
 async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session=Depends(get_db)):
     crud.add_teachers(db, teachers)
 
-@app.post('/teachers/add_teacher/', status_code=201)
+@app.post('/teachers/add_teacher/')
 async def add_teacher(teacher: schemas.TeacherCreate, db: Session=Depends(get_db)):
     crud.add_teacher(db, teacher)
 
