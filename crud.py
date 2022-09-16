@@ -167,7 +167,7 @@ def add_teachers(db: Session, teachers: List[schemas.TeacherCreate]):
 
 
 def add_teacher(db: Session, teacher: schemas.TeacherCreate):
-    tmp_teacher.id =  str(uuid4())
+    tmp_teacher.id = str(uuid4())
     tmp_teacher = models.Teacher(**teacher.dict())
     db.add(tmp_teacher)
     db.commit()
