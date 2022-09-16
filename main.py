@@ -42,7 +42,7 @@ def get_db():
         db.close()
 
 
-@app.delete('/teachers/delete_teacher', status_code=204)
+@app.delete('/teachers/{teacher_id}', status_code=204)
 async def delete_teacher(teacher_id, db: Session=Depends(get_db)):
     crud.delete_teacher(db, teacher_id)
 
@@ -112,14 +112,14 @@ async def get_teachers(faculty='', db=Depends(get_db)):
 async def get_faculties():
     return
 
-@app.post('/lessons/add_lesson')
+@app.post('/lessons')
 async def add_lesson(lesson: Request, db=Depends(get_db)):
     lesson = await lesson.json() 
     return crud.add_lesson(db, lesson)
 
-@app.delete('/lessons/delete_lesson')
-def delete_lesson(id, db=Depends(get_db)):
-    return crud.delete_lesson(db, id)
+@app.delete('/lessons/{lesson_id}')
+def delete_lesson(lesson_id, db=Depends(get_db)):
+    return crud.delete_lesson(db, lesson_id)
 
 @app.get('/delete_duplicate_teachers')
 async def delete_duplicate_teachers(db=Depends(get_db)):
