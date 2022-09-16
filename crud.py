@@ -163,6 +163,7 @@ def add_teachers(db: Session, teachers: List[schemas.TeacherCreate]):
         db.add(tmp_teacher)
         db.commit()
         db.refresh(tmp_teacher)
+    
 
 
 def add_teacher(db: Session, teacher: schemas.TeacherCreate):

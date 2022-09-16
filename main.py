@@ -1,7 +1,7 @@
 """Desribe of module"""
 import os
 from typing import List
-from fastapi import Depends, FastAPI, UploadFile, File, Request
+from fastapi import Depends, FastAPI, UploadFile, File, Request, status_code
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
@@ -42,21 +42,21 @@ def get_db():
         db.close()
 
 
-@app.get('/teachers/delete_teacher')
+@app.get('/teachers/delete_teacher', status_code=200)
 async def delete_teacher(teacher_id, db: Session=Depends(get_db)):
     crud.delete_teacher(db, teacher_id)
 
 
-@app.post('/teachers/add_teachers/')
+@app.post('/teachers/add_teachers/', status_code=201)
 async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session=Depends(get_db)):
     crud.add_teachers(db, teachers)
 
-@app.post('/teachers/add_teacher/')
+@app.post('/teachers/add_teacher/', status_code=201)
 async def add_teacher(teacher: schemas.TeacherCreate, db: Session=Depends(get_db)):
     crud.add_teacher(db, teacher)
 
 
-@app.get('/upload_excel_schedule/')
+@app.get('/upload_excel_schedule/', status_code=200)
 async def upload_excel_schedule_form(faculty):
     """Generate HTML form for upload .xlsx file with schedule to server"""
     content = f"""
@@ -72,7 +72,7 @@ async def upload_excel_schedule_form(faculty):
     return HTMLResponse(content=content)
 
 
-@app.post('/upload_excel_schedule/')
+@app.post('/upload_excel_schedule/', status_code=201)
 async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Session = Depends(get_db)):
     with open(file.filename, 'wb+') as file_object:
         file_object.write(file.file.read())
@@ -81,7 +81,7 @@ async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Sessi
     crud.upload_excel_schedule(db, lessons, FACULTIES[faculty])
 
 
-@app.get('/lessons/')
+@app.get('/lessons/', status_code=200)
 async def get_lessons(group_name='', teacher_name='', db: Session = Depends(get_db)):
     if group_name:
         result = crud.get_lessons_by_group(db, group_name)
