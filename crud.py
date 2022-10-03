@@ -6,6 +6,7 @@ Return: return_description
 """
 
 from itertools import groupby
+from pyexpat import model
 from uuid import uuid4
 from typing import List
 from sqlalchemy.orm import Session
@@ -122,7 +123,7 @@ def get_lessons_by_teacher(teacher_name, db: Session):
     argument -- description
     Return: return_description
     """
-
+    print(1)
     teachers_lessons = db.query(models.Lesson)\
         .filter(models.Lesson.teacher_name == teacher_name)\
         .order_by(models.Lesson.day, models.Lesson.lesson_number).all()
@@ -244,6 +245,19 @@ def delete_lesson(db: Session, lesson_id):
     db.query(models.Lesson).filter(models.Lesson.id == lesson_id).delete()
     db.commit()
 
-def edit_lesson(db: Session, lesson_id, lesson):
-    print(**lesson)
-    # db.query(models.Lesson).filter(models.Lesson.id == lesson_id).update(**lesson)
+def edit_lesson(db: Session, lesson_id, lesson: schemas.Lesson):
+    print(lesson)
+    db.query(models.Lesson).filter(models.Lesson.id == lesson_id).update({
+        models.Lesson.lesson_title: lesson['lesson_title'],
+        models.Lesson.group_name: lesson['group_name'],
+        models.Lesson.teacher_name: lesson['teacher_name'],
+        models.Lesson.faculty: lesson['faculty'],
+        models.Lesson.lesson_type: lesson['lesson_type'],
+        models.Lesson.day: int(lesson['day']),
+        models.Lesson.lesson_number: lesson['lesson_number'],
+        models.Lesson.numerator: lesson['numerator'],
+        models.Lesson.denominator: lesson['denominator'],
+        models.Lesson.first_group: lesson['first_group'],
+        models.Lesson.second_group: lesson['second_group']
+        })
+    db.commit()
