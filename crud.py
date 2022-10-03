@@ -244,3 +244,6 @@ def delete_duplicate_teachers(db: Session):
 def delete_lesson(db: Session, lesson_id):
     db.query(models.Lesson).filter(models.Lesson.id == lesson_id).delete()
     db.commit()
+
+def edit_lesson(db: Session, lesson_id, lesson):
+    db.query(models.Lesson).filter(models.Lesson.id == lesson_id).update(**lesson)

@@ -1,3 +1,5 @@
+*.xlsx
+schedule.json
 .idea
 .vscode
 # Byte-compiled / optimized / DLL files

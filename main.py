@@ -117,6 +117,10 @@ async def add_lesson(lesson: Request, db=Depends(get_db)):
     lesson = await lesson.json() 
     return crud.add_lesson(db, lesson)
 
+@app.put('/lessons/{lesson_id}')
+def edit_lesson(lesson_id, lesson: Request, db=Depends(get_db)):
+    return crud.edit_lesson(db, lesson_id, lesson)
+
 @app.delete('/lessons/{lesson_id}')
 def delete_lesson(lesson_id, db=Depends(get_db)):
     return crud.delete_lesson(db, lesson_id)
