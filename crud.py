@@ -245,5 +245,5 @@ def delete_lesson(db: Session, lesson_id):
     db.commit()
 
 def edit_lesson(db: Session, lesson_id, lesson):
-    print(models.Lesson(**lesson))
+    print(**lesson)
     # db.query(models.Lesson).filter(models.Lesson.id == lesson_id).update(**lesson)
