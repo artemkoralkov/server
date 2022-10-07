@@ -169,13 +169,24 @@ def excel_to_json(filename):
                                 if tmp < 1:
                                     break
                                 if ws[get_column_letter(tmp + 1) + str(j + 1)].value is not None:
-                                    schedule[current_group].append([
-                                        {'numerator': True, **lesson_to_dict(
+                                    if ws[get_column_letter(i + 1) + str(j)].value is not None:
+                                        schedule[current_group].append([
+                                        {'numerator': True, 'first_group': True, **lesson_to_dict(
                                             ws[get_column_letter(i) + str(j)].value)},
+                                        {'numerator': True, 'second_group': True, **lesson_to_dict(
+                                            ws[get_column_letter(i + 1) + str(j)].value)},
                                         {'denominator': True, **lesson_to_dict(
                                             ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
                                     ])
-                                    break
+                                        break
+                                    else:    
+                                        schedule[current_group].append([
+                                            {'numerator': True, **lesson_to_dict(
+                                                ws[get_column_letter(i) + str(j)].value)},
+                                            {'denominator': True, **lesson_to_dict(
+                                                ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
+                                        ])
+                                        break
                             continue
                         if type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell':
                             if type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ != 'MergedCell' and \
