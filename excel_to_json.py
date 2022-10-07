@@ -178,12 +178,23 @@ def excel_to_json(filename):
                                     break
                             continue
                         if type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell':
-                            schedule[current_group].append([
-                                {'first_group': True, **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                {'second_group': True, **
-                                    lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)}
-                            ])
+                            if type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ != 'MergedCell' and \
+                                ws[get_column_letter(i + 1) + str(j + 1)].value is not None:
+                                schedule[current_group].append([
+                                    {'first_group': True, **
+                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
+                                    {'second_group': True, 'numerator': True, **
+                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)},
+                                    {'second_group': True, 'denominator': True, **
+                                    lesson_to_dict(ws[get_column_letter(i + 1) + str(j + 1)].value)}
+                                ])
+                            else:
+                                schedule[current_group].append([
+                                    {'first_group': True, **
+                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
+                                    {'second_group': True, **
+                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)}
+                                ])
                         else:
                             schedule[current_group].append(lesson_to_dict(
                                 ws[get_column_letter(i) + str(j)].value))
