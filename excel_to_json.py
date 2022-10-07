@@ -144,7 +144,16 @@ def excel_to_json(filename):
                             ws[get_column_letter(tmp + 1) + str(j)].value)
                         break
                 if type(ws[get_column_letter(i) + str(j + 1)]).__name__ == 'MergedCell':
-                    schedule[current_group].append(tmp_lesson)
+                    if type(ws[get_column_letter(i - 1) + str(j + 1)]).__name__ == 'MergedCell':
+                        schedule[current_group].append([{
+                        'numerator': True,
+                        **tmp_lesson
+                    },
+                        {'denominator': True, **lesson_to_dict(
+                            ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
+                    ])
+                    else:
+                        schedule[current_group].append(tmp_lesson)
                 else:
                     schedule[current_group].append([{
                         'numerator': True,
