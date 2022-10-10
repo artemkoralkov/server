@@ -60,7 +60,6 @@ def lesson_to_dict(lesson: str) -> Dict:
 
         if '(' not in lesson:
             if '\n' not in lesson:
-                print('lesson=',lesson)
                 space_indexies = [m.start() for m in re.finditer(' ', lesson)]
                 result = {'lesson_name': lesson[:space_indexies[-3] + 1],
                           'lesson_teacher': lesson[space_indexies[-3] + 1:]}
@@ -144,7 +143,17 @@ def excel_to_json(filename):
                             ws[get_column_letter(tmp + 1) + str(j)].value)
                         break
                 if type(ws[get_column_letter(i) + str(j + 1)]).__name__ == 'MergedCell':
-                    schedule[current_group].append(tmp_lesson)
+                    if type(ws[get_column_letter(tmp + 1) + str(j + 1)]).__name__ != 'MergedCell':
+                        schedule[current_group].append([{
+                        'numerator': True,
+                        **tmp_lesson
+                    },
+                        {'denominator': True, **lesson_to_dict(
+                            ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
+                    ])
+                    else:
+                        schedule[current_group].append(tmp_lesson)
+                    
                 else:
                     schedule[current_group].append([{
                         'numerator': True,
@@ -153,6 +162,7 @@ def excel_to_json(filename):
                         {'denominator': True, **lesson_to_dict(
                             ws[get_column_letter(i) + str(j + 1)].value)}
                     ])
+                    
                 continue
 
             if type(ws[get_column_letter(i) + str(j)]).__name__ == 'MergedCell':
@@ -169,13 +179,25 @@ def excel_to_json(filename):
                                 if tmp < 1:
                                     break
                                 if ws[get_column_letter(tmp + 1) + str(j + 1)].value is not None:
-                                    schedule[current_group].append([
-                                        {'numerator': True, **lesson_to_dict(
-                                            ws[get_column_letter(i) + str(j)].value)},
-                                        {'denominator': True, **lesson_to_dict(
-                                            ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
-                                    ])
-                                    break
+                                    if type(ws[get_column_letter(i) + str(j)]).__name__ != 'MergedCell' and \
+                                        type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell':
+                                        schedule[current_group].append([
+                                            {'numerator': True, 'first_group': True, **lesson_to_dict(
+                                                ws[get_column_letter(i) + str(j)].value)},
+                                            {'numerator': True, 'second_group': True, **lesson_to_dict(
+                                            ws[get_column_letter(i + 1) + str(j)].value)},
+                                            {'denominator': True, **lesson_to_dict(
+                                                ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
+                                        ])
+                                        break
+                                    else:    
+                                        schedule[current_group].append([
+                                            {'numerator': True, **lesson_to_dict(
+                                                ws[get_column_letter(i) + str(j)].value)},
+                                            {'denominator': True, **lesson_to_dict(
+                                                ws[get_column_letter(tmp + 1) + str(j + 1)].value)}
+                                        ])
+                                        break
                             continue
                         if type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell':
                             if type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ != 'MergedCell' and \
@@ -240,5 +262,4 @@ def excel_to_json(filename):
                                     lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)}
                             ])
         schedule[current_group] = list(split(schedule[current_group], 6))
-        print(schedule)
     return schedule
