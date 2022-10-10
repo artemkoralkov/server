@@ -241,4 +241,4 @@ def excel_to_json(filename):
                             ])
         schedule[current_group] = list(split(schedule[current_group], 6))
         print(schedule)
-    return 
+    return schedule
