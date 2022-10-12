@@ -1,4 +1,5 @@
 import re
+import json
 from typing import Dict
 
 from openpyxl.utils import get_column_letter
@@ -238,14 +239,26 @@ def excel_to_json(filename):
                             ])
                         elif type(ws[get_column_letter(i + 1) + str(j)]).__name__ != 'MergedCell' and \
                         type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ == 'MergedCell':
-                            schedule[current_group].append([
-                                {'numerator': True, 'first_group': True, **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
-                                {'numerator': True, 'second_group': True, **
-                                    lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)},
-                                {'denominator': True,  **
-                                    lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)}
-                            ])
+                            if f'{get_column_letter(i + 1) + str(j)}:{get_column_letter(i + 1) + str(j + 1)}' in list(map(lambda e: str(e), ws.merged_cells.ranges)):
+                                # print(get_column_letter(i) + str(j))
+                                schedule[current_group].append([
+                                    {'numerator': True, 'first_group': True, **
+                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
+                                    {'denominator': True, 'first_group': True, **
+                                        lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)},
+                                    {'second_group': True,  **
+                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)}
+                                ])
+                            else:
+                                
+                                schedule[current_group].append([
+                                    {'numerator': True, 'first_group': True, **
+                                        lesson_to_dict(ws[get_column_letter(i) + str(j)].value)},
+                                    {'numerator': True, 'second_group': True, **
+                                        lesson_to_dict(ws[get_column_letter(i + 1) + str(j)].value)},
+                                    {'denominator': True,  **
+                                        lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)}
+                                ])
                         elif type(ws[get_column_letter(i + 1) + str(j + 1)]).__name__ != 'MergedCell'\
                          and type(ws[get_column_letter(i + 1) + str(j)]).__name__ == 'MergedCell':
                             schedule[current_group].append([
@@ -262,4 +275,7 @@ def excel_to_json(filename):
                                     lesson_to_dict(ws[get_column_letter(i) + str(j + 1)].value)}
                             ])
         schedule[current_group] = list(split(schedule[current_group], 6))
+    # print()
     return schedule
+# with open('shcedule.json', 'w', encoding='utf-8') as fp:
+#     json.dump(excel_to_json("E:\work\Копия raspis_FIF__I_semestr_2022-2023.xlsx"), fp, ensure_ascii=False, indent=4)
