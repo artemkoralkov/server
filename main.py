@@ -19,7 +19,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-origins = ['http://localhost:3000', 'https://mspu-schedule.netlify.app']
+origins = ['http://localhost:3000', 'https://mspu-schedule.netlify.app', 'https://web.postman.co']
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -44,16 +44,16 @@ def get_db():
 
 @app.delete('/teachers/{teacher_id}', status_code=204)
 async def delete_teacher(teacher_id, db: Session=Depends(get_db)):
-    crud.delete_teacher(db, teacher_id)
+    return crud.delete_teacher(db, teacher_id)
 
 
 @app.post('/teachers/add_teachers/')
 async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session=Depends(get_db)):
-    crud.add_teachers(db, teachers)
+    return crud.add_teachers(db, teachers)
 
 @app.post('/teachers/add_teacher/')
 async def add_teacher(teacher: schemas.TeacherCreate, db: Session=Depends(get_db)):
-    crud.add_teacher(db, teacher)
+    return crud.add_teacher(db, teacher)
 
 
 @app.get('/upload_excel_schedule/', status_code=200)
@@ -78,7 +78,7 @@ async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Sessi
         file_object.write(file.file.read())
     lessons = excel_to_json(file.filename)
     os.remove(file.filename)
-    crud.upload_excel_schedule(db, lessons, FACULTIES[faculty])
+    return crud.upload_excel_schedule(db, lessons, FACULTIES[faculty])
 
 
 @app.get('/lessons/', status_code=200)

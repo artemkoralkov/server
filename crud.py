@@ -157,11 +157,15 @@ def get_teachers(db: Session):
 
 
 def add_teachers(db: Session, teachers: List[schemas.TeacherCreate]):
+    new_teachers = []
     for teacher in teachers:
         tmp_teacher = models.Teacher(**{'id': str(uuid4()), **teacher.dict()})
+        new_teachers.append(tmp_teacher)
         db.add(tmp_teacher)
         db.commit()
         db.refresh(tmp_teacher)
+    return new_teachers
+    
     
 
 
@@ -170,6 +174,7 @@ def add_teacher(db: Session, teacher: schemas.TeacherCreate):
     db.add(tmp_teacher)
     db.commit()
     db.refresh(tmp_teacher)
+    return tmp_teacher
 
 
 def get_groups(db: Session):
@@ -182,10 +187,11 @@ def get_groups(db: Session):
 
 
 def add_lesson(db: Session, lesson: schemas.LessonCreate):
-    tmp_lesson = models.Lesson({'id':str(uuid4()), **lesson})
+    tmp_lesson = models.Lesson(**{'id':str(uuid4()), **lesson.dict()})
     db.add(tmp_lesson)
     db.commit()
     db.refresh(tmp_lesson)
+    return tmp_lesson
 
 
 def get_lessons(db: Session):
@@ -259,3 +265,4 @@ def edit_lesson(db: Session, lesson_id, lesson: schemas.Lesson):
         models.Lesson.second_group: lesson['second_group']
         })
     db.commit()
+    return {'id': lesson_id, **lesson.dict()}
