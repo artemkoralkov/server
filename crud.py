@@ -187,7 +187,7 @@ def get_groups(db: Session):
 
 
 def add_lesson(db: Session, lesson: schemas.LessonCreate):
-    tmp_lesson = models.Lesson(**{'id':str(uuid4()), **lesson.dict()})
+    tmp_lesson = models.Lesson(**{'id':str(uuid4()), **lesson})
     db.add(tmp_lesson)
     db.commit()
     db.refresh(tmp_lesson)
@@ -265,4 +265,4 @@ def edit_lesson(db: Session, lesson_id, lesson: schemas.Lesson):
         models.Lesson.second_group: lesson['second_group']
         })
     db.commit()
-    return {'id': lesson_id, **lesson.dict()}
+    return {'id': lesson_id, **lesson}
