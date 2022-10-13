@@ -123,7 +123,6 @@ def get_lessons_by_teacher(teacher_name, db: Session):
     argument -- description
     Return: return_description
     """
-    print(1)
     teachers_lessons = db.query(models.Lesson)\
         .filter(models.Lesson.teacher_name == teacher_name)\
         .order_by(models.Lesson.day, models.Lesson.lesson_number).all()
@@ -146,7 +145,7 @@ def get_lessons_by_teacher(teacher_name, db: Session):
     }
     for i in teachers_lessons:
         for key, group in groupby(teachers_lessons[i], key=lambda item: vars(item)['lesson_number']):
-            print(i, key, group)
+            
             tmp_teachers_lessons[i][int(key)].extend(list(group))
 
     return tmp_teachers_lessons
@@ -183,7 +182,7 @@ def get_groups(db: Session):
 
 
 def add_lesson(db: Session, lesson: schemas.LessonCreate):
-    tmp_lesson = models.Lesson(**lesson)
+    tmp_lesson = models.Lesson({'id':str(uuid4()), **lesson})
     db.add(tmp_lesson)
     db.commit()
     db.refresh(tmp_lesson)
@@ -222,7 +221,7 @@ def get_lessons_by_group(db: Session, group_name: str):
     }
     for i in group_lessons:
         for key, group in groupby(group_lessons[i], key=lambda item: vars(item)['lesson_number']):
-            print(i, key, group)
+           
             tmp_group_lessons[i][int(key)].extend(list(group))
     return tmp_group_lessons
 
@@ -246,7 +245,6 @@ def delete_lesson(db: Session, lesson_id):
     db.commit()
 
 def edit_lesson(db: Session, lesson_id, lesson: schemas.Lesson):
-    print(lesson)
     db.query(models.Lesson).filter(models.Lesson.id == lesson_id).update({
         models.Lesson.lesson_title: lesson['lesson_title'],
         models.Lesson.group_name: lesson['group_name'],

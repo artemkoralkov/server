@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class LessonBase(BaseModel):
-    id: str
+    
     lesson_title: str
     group_name: str
     teacher_name: str
@@ -22,7 +22,7 @@ class LessonCreate(LessonBase):
     pass
 
 class Lesson(LessonCreate):
-    
+    id: str
 
     class Config:
         orm_mode = True
