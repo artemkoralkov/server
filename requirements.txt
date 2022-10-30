@@ -4,3 +4,4 @@ python-multipart
 SQLAlchemy
 uvicorn
 requests
+jinja2

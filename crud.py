@@ -170,11 +170,15 @@ def add_teachers(db: Session, teachers: List[schemas.TeacherCreate]):
 
 
 def add_teacher(db: Session, teacher: schemas.TeacherCreate):
-    tmp_teacher = models.Teacher(**{'id': str(uuid4()), **teacher.dict()})
-    db.add(tmp_teacher)
-    db.commit()
-    db.refresh(tmp_teacher)
-    return tmp_teacher
+    teachers = get_teachers(db)
+    if teacher not in teachers:
+        tmp_teacher = models.Teacher(**{'id': str(uuid4()), **teacher})
+        db.add(tmp_teacher)
+        db.commit()
+        db.refresh(tmp_teacher)
+        return tmp_teacher
+    else:
+        return 'Преподаватель уже записан'
 
 
 def get_groups(db: Session):

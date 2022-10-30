@@ -1,8 +1,10 @@
 """Desribe of module"""
 import os
+from re import TEMPLATE
 from typing import List
-from fastapi import Depends, FastAPI, UploadFile, File, Request
+from fastapi import Depends, FastAPI, UploadFile, File, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 
 from sqlalchemy.orm import Session
 
@@ -16,7 +18,7 @@ from database import SessionLocal, engine
 from excel_to_json import excel_to_json
 
 models.Base.metadata.create_all(bind=engine)
-
+templates = Jinja2Templates(directory='./templates')
 app = FastAPI()
 
 origins = ['http://localhost:3000', 'https://mspu-schedule.netlify.app', 'https://web.postman.co']
@@ -28,7 +30,7 @@ app.add_middleware(
 )
 
 
-FACULTIES = {'dino': 'ДиНО', 'fif': 'ФИФ',
+FACULTIES = {'dino': 'ДиНО', 'fif': 'ФИФ',  
              'ffk': 'ФФК', 'ff': 'ФФ', 'tbf': 'ТБФ'}
 
 
@@ -42,22 +44,42 @@ def get_db():
         db.close()
 
 
+@app.get('/')
+async def index(request: Request):
+    return templates.TemplateResponse(
+        'index.html',
+        {'request': request}
+    )
+
 @app.delete('/teachers/{teacher_id}', status_code=204)
 async def delete_teacher(teacher_id, db: Session=Depends(get_db)):
     return crud.delete_teacher(db, teacher_id)
-
 
 @app.post('/teachers/add_teachers/')
 async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session=Depends(get_db)):
     return crud.add_teachers(db, teachers)
 
-@app.post('/teachers/add_teacher/')
-async def add_teacher(teacher: schemas.TeacherCreate, db: Session=Depends(get_db)):
+@app.get('/teachers/add_teacher')
+async def add_teacher(request: Request):
+    return templates.TemplateResponse(
+        'add_teacher_form.html',
+        {
+            'request': request,
+            'faculties': list(FACULTIES.values())
+        }
+    )
+
+@app.post('/teachers/add_teacher')
+async def add_teacher(request: Request, teacher_name=Form(...), faculty=Form(...), db: Session=Depends(get_db)):
+    teacher = {
+        'teacher_name': teacher_name,
+        'faculty': faculty
+        }
+    
     return crud.add_teacher(db, teacher)
 
-
 @app.get('/upload_excel_schedule/', status_code=200)
-async def upload_excel_schedule_form(faculty):
+async def upload_excel_schedule_form(request: Request, faculty):
     """Generate HTML form for upload .xlsx file with schedule to server"""
     content = f"""
         <body>
@@ -69,7 +91,14 @@ async def upload_excel_schedule_form(faculty):
         </form>
         </body>
     """
-    return HTMLResponse(content=content)
+    return templates.TemplateResponse(
+        'upload_excel_form.html',
+        {
+            'request': request,
+            'faculties': FACULTIES,
+            'faculty': faculty,
+        }
+    )
 
 
 @app.post('/upload_excel_schedule/', status_code=201)
