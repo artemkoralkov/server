@@ -1,0 +1,18 @@
+<body>
+    
+    <form action="/teachers/add_teacher" enctype="multipart/form-data" method="post">
+        {% for faculty in faculties %}
+            <p>
+                <input type="radio" id="{{faculty}}" name="faculty" value="{{faculty}}">
+                <label for="{{ faculty }}">{{faculty}}</label>
+            </p>
+        {% endfor %}
+        <input 
+            name="teacher_name" 
+            type="text" 
+            placeholder="Должность и имя преподавателя"
+            style="width: 220px;"
+        >
+        <input type="submit">
+    </form>
+</body>
