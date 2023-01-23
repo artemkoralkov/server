@@ -20,7 +20,7 @@ def is_merged_sell(cell) -> bool:
 def lesson_to_dict(lesson: str, group_number: int | None = None) -> dict[str, str | list[str]] | dict:
     if lesson is None:
         return {'lesson': None}
-    elif 'СМГ' in lesson:
+    elif 'СМГ' in lesson and group_number:
         if lesson.count('\n') > 1:
             lesson = lesson[::-1].replace('\n', ' ', 1)[::-1]
         lesson_name, teachers = lesson.split('\n')
