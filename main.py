@@ -56,7 +56,7 @@ async def delete_teacher(teacher_id, db: Session = Depends(get_db)):
 
 
 @app.post('/teachers/add_teachers/', response_model=list[schemas.Teacher])
-async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session = Depends(get_db)) -> list[schemas.Teacher]:
+async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session = Depends(get_db)):
     return await crud.add_teachers(db, teachers)
 
 
@@ -124,7 +124,7 @@ async def get_groups_by_faculty(faculty='', db: Session = Depends(get_db)):
 
 
 @app.get('/teachers/')
-async def get_teachers(faculty='', db=Depends(get_db)) -> list[schemas.Teacher]:
+async def get_teachers(faculty='', db=Depends(get_db)):
     if faculty:
         return crud.get_teachers_by_faculty(db, FACULTIES[faculty])
     elif not faculty:

@@ -17,7 +17,7 @@ def is_merged_sell(cell) -> bool:
     return type(cell).__name__ == 'MergedCell'
 
 
-def lesson_to_dict(lesson: str, group_number: int | None = None) -> dict[str, str | list[str]] | dict:
+def lesson_to_dict(lesson: str, group_number = None):
     if lesson is None:
         return {'lesson': None}
     elif 'СМГ' in lesson and group_number:

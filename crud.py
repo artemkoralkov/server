@@ -90,7 +90,7 @@ def get_lessons_by_teacher(teacher_name, db: Session):
     argument -- description
     Return: return_description
     """
-    teachers_lessons: list[Lesson] | dict[str, list[Lesson]] = db.query(Lesson) \
+    teachers_lessons = db.query(Lesson) \
         .filter(Lesson.teacher_name == teacher_name) \
         .order_by(Lesson.day, Lesson.lesson_number).all()
     teachers_lessons = {
@@ -122,7 +122,7 @@ def get_teachers(db: Session) -> list[Teacher]:
     return teachers
 
 
-def get_teacher_by_name(db: Session, teacher_name: str) -> Teacher | None:
+def get_teacher_by_name(db: Session, teacher_name: str):
     return db.query(Teacher).filter(Teacher.name == teacher_name).first()
 
 
@@ -134,11 +134,13 @@ def get_teachers_by_faculty(db: Session, faculty: str) -> list[Teacher]:
     return teachers_by_faculty
 
 
-def add_teachers(db: Session, teachers: list[schemas.TeacherCreate]):
-    new_teachers: list[schemas.Teacher] = []
+def add_teachers(db: Session, teachers: list[schemas.TeacherCreate]) -> list[Teacher]:
+    new_teachers: list[Teacher] = []
     for teacher in teachers:
-        tmp_teacher: schemas.Teacher = schemas.Teacher(
-            **{'id': str(uuid4()), **teacher.dict()})
+        tmp_teacher: Teacher = Teacher(
+            id=str(uuid4()),
+            **teacher.dict()
+        )
         new_teachers.append(tmp_teacher)
         db.add(tmp_teacher)
         db.commit()
@@ -146,19 +148,23 @@ def add_teachers(db: Session, teachers: list[schemas.TeacherCreate]):
     return new_teachers
 
 
-def add_teacher(db: Session, teacher: schemas.TeacherCreate):
-    db.add(teacher)
+def add_teacher(db: Session, teacher: schemas.TeacherCreate) -> Teacher:
+    tmp_teacher: Teacher = Teacher(
+        id=str(uuid4()),
+        **teacher.dict()
+    )
+    db.add(tmp_teacher)
     db.commit()
-    db.refresh(teacher)
-    return teacher
+    db.refresh(tmp_teacher)
+    return tmp_teacher
 
 
-def delete_teacher(db: Session, teacher_id):
+def delete_teacher(db: Session, teacher_id) -> None:
     db.query(Teacher).filter(Teacher.id == teacher_id).delete()
     db.commit()
 
 
-def delete_duplicate_teachers(db: Session):
+def delete_duplicate_teachers(db: Session) -> None:
     inner_q = db.query(func.min(Teacher.id)).group_by(Teacher.teacher_name)
     aliased = alias(inner_q)
     q = db.query(Teacher).filter(~Teacher.id.in_(aliased))
