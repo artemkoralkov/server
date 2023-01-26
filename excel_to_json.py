@@ -26,7 +26,10 @@ def lesson_to_dict(lesson: str, group_number = None):
         lesson_name, teachers = lesson.split('\n')
         teachers = teachers.split(', ')
         if [teachers.index(i) for i in teachers if 'СМГ' in i][0] == 0:
-            teachers = teachers[::-1]
+            return {
+            'lesson_title': 'Физическая культура',
+            'teacher_name': f'{teachers[group_number]}, {teachers[0]}'
+        }
         return {
             'lesson_title': 'Физическая культура',
             'teacher_name': f'{teachers[group_number - 1]}, {teachers[-1]}'
