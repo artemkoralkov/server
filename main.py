@@ -18,7 +18,7 @@ from excel_to_json import excel_to_json
 models.Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory='./templates')
 app = FastAPI()
-drive = Drive('simple_drive')
+# drive = Drive('simple_drive')
 
 origins: list[str] = ['http://localhost:3000',
                       'https://mspu-schedule.netlify.app', 'https://web.postman.co']
