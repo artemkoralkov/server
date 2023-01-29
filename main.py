@@ -11,7 +11,6 @@ import crud
 import models
 import schemas
 
-
 from database import SessionLocal, engine
 from excel_to_json import excel_to_json
 
@@ -28,7 +27,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 FACULTIES: dict[str, str] = {'dino': 'ДиНО', 'fif': 'ФИФ',
                              'ffk': 'ФФК', 'ff': 'ФФ', 'tbf': 'ТБФ'}
@@ -48,9 +46,10 @@ def get_db():
 async def index(request: Request):
     return templates.TemplateResponse(
         'index.html',
-        {'request': request,
-         'os': os.listdir('../..')
-        }
+        {
+            'request': request,
+            'os': os.listdir('..')
+         }
     )
 
 
