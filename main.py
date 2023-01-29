@@ -47,7 +47,7 @@ async def index(request: Request):
         'index.html',
         {
             'request': request,
-            'os': os.listdir('../tmp')
+            'os': os.listdir('..')
          }
     )
 
