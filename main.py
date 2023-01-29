@@ -3,7 +3,6 @@ from typing import List, Literal
 from fastapi import Depends, FastAPI, UploadFile, File, Request, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
-from deta import Drive
 
 from sqlalchemy.orm import Session
 
