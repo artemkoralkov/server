@@ -123,7 +123,7 @@ def get_teachers(db: Session) -> list[Teacher]:
 
 
 def get_teacher_by_name(db: Session, teacher_name: str):
-    return db.query(Teacher).filter(Teacher.name == teacher_name).first()
+    return db.query(Teacher).filter(Teacher.teacher_name == teacher_name).first()
 
 
 def get_teachers_by_faculty(db: Session, faculty: str) -> list[Teacher]:

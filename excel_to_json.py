@@ -17,7 +17,7 @@ def is_merged_sell(cell) -> bool:
     return type(cell).__name__ == 'MergedCell'
 
 
-def lesson_to_dict(lesson: str, group_number = None):
+def lesson_to_dict(lesson: str, group_number=None):
     if lesson is None:
         return {'lesson': None}
     elif 'СМГ' in lesson and group_number:
@@ -27,9 +27,9 @@ def lesson_to_dict(lesson: str, group_number = None):
         teachers = teachers.split(', ')
         if [teachers.index(i) for i in teachers if 'СМГ' in i][0] == 0:
             return {
-            'lesson_title': 'Физическая культура',
-            'teacher_name': f'{teachers[group_number]}, {teachers[0]}'
-        }
+                'lesson_title': 'Физическая культура',
+                'teacher_name': f'{teachers[group_number]}, {teachers[0]}'
+            }
         return {
             'lesson_title': 'Физическая культура',
             'teacher_name': f'{teachers[group_number - 1]}, {teachers[-1]}'
@@ -260,6 +260,7 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
         column += 3
         schedule[current_group] = split_list_by_parts(schedule[current_group], 6)
     return schedule
+
 
 # lessons = excel_to_json("B:/Downloads/raspis_FIF__I_semestr_2022-2023.xlsx")
 # with open('schedule.json', 'r', encoding='utf-8') as file:

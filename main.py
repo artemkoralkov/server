@@ -3,6 +3,7 @@ from typing import List, Literal
 from fastapi import Depends, FastAPI, UploadFile, File, Request, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
+from deta import Drive
 
 from sqlalchemy.orm import Session
 
@@ -17,6 +18,7 @@ from excel_to_json import excel_to_json
 models.Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory='./templates')
 app = FastAPI()
+drive = Drive('simple_drive')
 
 origins: list[str] = ['http://localhost:3000',
                       'https://mspu-schedule.netlify.app', 'https://web.postman.co']
@@ -46,7 +48,9 @@ def get_db():
 async def index(request: Request):
     return templates.TemplateResponse(
         'index.html',
-        {'request': request}
+        {'request': request,
+         'os': os.listdir('../..')
+        }
     )
 
 
@@ -57,7 +61,7 @@ async def delete_teacher(teacher_id, db: Session = Depends(get_db)):
 
 @app.post('/teachers/add_teachers/', response_model=list[schemas.Teacher])
 async def add_teachers(teachers: List[schemas.TeacherCreate], db: Session = Depends(get_db)):
-    return await crud.add_teachers(db, teachers)
+    return crud.add_teachers(db, teachers)
 
 
 @app.get('/teachers/add_teacher')
@@ -98,10 +102,11 @@ async def upload_excel_schedule_form(request: Request, faculty):
 
 @app.post('/upload_excel_schedule/', status_code=201)
 async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    with open(file.filename, 'wb+') as file_object:
+    print(os.listdir())
+    with open(f'./tmp/{file.filename}', 'wb+') as file_object:
         file_object.write(file.file.read())
-    schedule = excel_to_json(file.filename)
-    os.remove(file.filename)
+    schedule = excel_to_json(f'./tmp/{file.filename}')
+    os.remove(f'./tmp/{file.filename}')
     return crud.upload_excel_schedule(db, schedule, FACULTIES[faculty])
 
 
