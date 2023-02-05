@@ -290,9 +290,9 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
 # print(
 #     lesson_to_dict("Физическая культура\nпр. Федорович В.К., пр. Таргонский Н.Н., пр. Маслова Е.А.,\nСМГ Болбас Е.В.")
 # )
-filename = "B:/Downloads/Основное 22-23.xlsx"
-wb = load_workbook(filename)
-ws = wb.active
+# filename = "B:/Downloads/Основное 22-23.xlsx"
+# wb = load_workbook(filename)
+# ws = wb.active
 # upper_left_cell = ws['J40']
 # upper_right_cell = ws['K40']
 # bottom_left_cell = ws['J41']
