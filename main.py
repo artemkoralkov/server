@@ -47,7 +47,6 @@ async def index(request: Request):
         'index.html',
         {
             'request': request,
-            'os': os.listdir('../../..')
          }
     )
 
@@ -100,10 +99,10 @@ async def upload_excel_schedule_form(request: Request, faculty):
 
 @app.post('/upload_excel_schedule/', status_code=201)
 async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    with open(f'../../../tmp/{file.filename}', 'wb+') as file_object:
+    with open(f'{file.filename}', 'wb+') as file_object:
         file_object.write(file.file.read())
-    schedule = excel_to_json(f'../../../tmp/{file.filename}')
-    os.remove(f'../../../tmp/{file.filename}')
+    schedule = excel_to_json(f'{file.filename}')
+    os.remove(f'{file.filename}')
     return crud.upload_excel_schedule(db, schedule, FACULTIES[faculty])
 
 

@@ -27,8 +27,9 @@ def upload_excel_schedule(db: Session, schedule, faculty):
     for group, days in schedule.items():
         day = 1
         for lessons in days:
-            lesson_number = 0
+            lesson_number = -1
             for lesson in lessons:
+                lesson_number += 1
                 if isinstance(lesson, list):
                     for i in lesson:
                         if 'lesson' in i:
@@ -58,13 +59,8 @@ def upload_excel_schedule(db: Session, schedule, faculty):
                     db.add(tmp_lesson)
                     db.commit()
                     db.refresh(tmp_lesson)
-                lesson_number += 1
             day += 1
     return 1
-
-
-# def get_lessons_by_group(group_name, db: Session):
-#     return db.query(Lesson).filter(Lesson.group_name == group_name).all()
 
 
 def get_groups_by_faculty(faculty, db: Session):
@@ -83,7 +79,7 @@ def get_groups_by_faculty(faculty, db: Session):
     return groups
 
 
-def get_lessons_by_teacher(teacher_name, db: Session):
+def get_lessons_by_teacher(teacher_name: str, db: Session):
     """sumary_line
 
     Keyword arguments:
@@ -91,7 +87,7 @@ def get_lessons_by_teacher(teacher_name, db: Session):
     Return: return_description
     """
     teachers_lessons = db.query(Lesson) \
-        .filter(Lesson.teacher_name == teacher_name) \
+        .filter(Lesson.teacher_name.like(f'%{teacher_name}')) \
         .order_by(Lesson.day, Lesson.lesson_number).all()
     teachers_lessons = {
         'Monday': [i for i in teachers_lessons if i.day == 1],
@@ -114,7 +110,7 @@ def get_lessons_by_teacher(teacher_name, db: Session):
         for key, group in groupby(teachers_lessons[i], key=lambda item: vars(item)['lesson_number']):
             tmp_teachers_lessons[i][int(key)].extend(list(group))
 
-    return tmp_teachers_lessons
+    return teachers_lessons
 
 
 def get_teachers(db: Session) -> list[Teacher]:
@@ -129,8 +125,6 @@ def get_teacher_by_name(db: Session, teacher_name: str):
 def get_teachers_by_faculty(db: Session, faculty: str) -> list[Teacher]:
     teachers_by_faculty: list[Teacher] = db.query(Teacher).filter(
         Teacher.faculty == faculty).all()
-    # teachers_by_faculty = db.query(Lesson).filter(Lesson.faculty == faculty).all()
-    # teachers_by_faculty = set([i.teacher_name for i in teachers_by_faculty])
     return teachers_by_faculty
 
 

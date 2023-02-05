@@ -25,14 +25,16 @@ def lesson_to_dict(lesson: str, group_number=None):
             lesson = lesson[::-1].replace('\n', ' ', 1)[::-1]
         lesson_name, teachers = lesson.split('\n')
         teachers = teachers.split(', ')
-        if [teachers.index(i) for i in teachers if 'СМГ' in i][0] == 0:
+        smg_teacher = teachers[[teachers.index(i) for i in teachers if 'СМГ' in i][0]]
+        teachers.remove(smg_teacher)
+        if group_number == 4:
             return {
                 'lesson_title': 'Физическая культура',
-                'teacher_name': f'{teachers[group_number]}, {teachers[0]}'
+                'teacher_name': f'{teachers[group_number - 2]}, {smg_teacher}'
             }
         return {
             'lesson_title': 'Физическая культура',
-            'teacher_name': f'{teachers[group_number - 1]}, {teachers[-1]}'
+            'teacher_name': f'{teachers[group_number - 1]}, {smg_teacher}'
         }
     else:
         positions = ('пр.-ст.', 'ст.пр.', 'пр.', 'доц.', 'проф.')
@@ -48,7 +50,7 @@ def lesson_to_dict(lesson: str, group_number=None):
         right_bracket_index = lesson_name.rfind(')')
         lesson_types = (
             'ЛК', 'ПЗ/СЗ', 'СЗ', 'СЗ/ЛЗ', 'ЛК/ПЗ', 'ПЗ', ' Л К ', 'ЛК/СЗ', '  Л  К  ', 'лк', 'пр', 'лб', 'сз',
-            'лк/пр', 'пз'
+            'лк/пр', 'пз', 'лз', 'ЛЗ', 'ЛБ'
         )
         lesson_type = ''
         if lesson_name[left_bracket_index + 1: right_bracket_index] in lesson_types:
@@ -152,7 +154,8 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
                         },
                     ])
                 elif not is_merged_sell(upper_right_cell) and \
-                        not is_merged_sell(bottom_left_cell):
+                        not is_merged_sell(bottom_left_cell) and \
+                        get_merged_cell_value(ws, bottom_right_cell) == upper_right_cell.value:
                     schedule[current_group].append([
                         {
                             'first_group': True,
@@ -160,8 +163,8 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
                             **lesson_to_dict(upper_left_cell.value)
                         },
                         {
-                            'second_group': True,
-                            'numerator': True,
+                            'first_group': True,
+                            'denominator': True,
                             **lesson_to_dict(bottom_left_cell.value)
                         },
                         {
@@ -175,6 +178,23 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
                         {
                             'numerator': True,
                             **lesson_to_dict(upper_left_cell.value)
+                        },
+                        {
+                            'denominator': True,
+                            **lesson_to_dict(bottom_left_cell.value)
+                        },
+                    ])
+                elif not is_merged_sell(upper_right_cell):
+                    schedule[current_group].append([
+                        {
+                            'numerator': True,
+                            'first_group': True,
+                            **lesson_to_dict(upper_left_cell.value)
+                        },
+                        {
+                            'numerator': True,
+                            'second_group': True,
+                            **lesson_to_dict(upper_right_cell.value)
                         },
                         {
                             'denominator': True,
@@ -270,13 +290,37 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
 # print(
 #     lesson_to_dict("Физическая культура\nпр. Федорович В.К., пр. Таргонский Н.Н., пр. Маслова Е.А.,\nСМГ Болбас Е.В.")
 # )
+filename = "B:/Downloads/Основное 22-23.xlsx"
+wb = load_workbook(filename)
+ws = wb.active
+# upper_left_cell = ws['J40']
+# upper_right_cell = ws['K40']
+# bottom_left_cell = ws['J41']
+# bottom_right_cell = ws['K41']
+# print(is_merged_sell(ws['K41']) and not is_merged_sell(ws['J40']) and not is_merged_sell(ws['K40']))
+# if is_merged_sell(bottom_right_cell) and \
+#         not is_merged_sell(upper_left_cell) and \
+#         not is_merged_sell(upper_right_cell):
+#     print([
+#         {
+#             'numerator': True,
+#             'first_group': True,
+#             **lesson_to_dict(upper_left_cell.value)
+#         },
+#         {
+#             'numerator': True,
+#             'second_group': True,
+#             **lesson_to_dict(upper_right_cell.value)
+#         },
+#         {
+#             'denominator': True,
+#             **lesson_to_dict(bottom_left_cell.value)
+#         },
+#     ])
 # with open('schedule.json', 'w', encoding='utf-8') as file:
 #     json.dump(
-#         excel_to_json("B:/Downloads/raspis_FIF__I_semestr_2022-2023.xlsx"),
+#         excel_to_json(filename),
 #         file,
 #         ensure_ascii=False,
 #         indent=4
 #     )
-# print(''.join("Ф   и   з   и   ч   е   с   к   а   я      к   у   л   ь   т   у   р   а".split()).replace('я', 'я '))
-string = 'ст.пр. Дранец В.Ф. (СМГ), пр. Блоцкая Ю.В., пр. Глебова Л.А., ст.пр. Борисок А.А.'
-print([string.split(', ').index(i) for i in string.split(', ') if 'СМГ' in i][0])
