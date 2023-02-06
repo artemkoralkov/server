@@ -110,7 +110,7 @@ def get_lessons_by_teacher(teacher_name: str, db: Session):
         for key, group in groupby(teachers_lessons[i], key=lambda item: vars(item)['lesson_number']):
             tmp_teachers_lessons[i][int(key)].extend(list(group))
 
-    return teachers_lessons
+    return tmp_teachers_lessons
 
 
 def get_teachers(db: Session) -> list[Teacher]:
