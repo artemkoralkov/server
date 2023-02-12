@@ -37,7 +37,7 @@ def lesson_to_dict(lesson: str, group_number=None):
             'teacher_name': f'{teachers[group_number - 1]}, {smg_teacher}'
         }
     else:
-        positions = ('пр.-ст.', 'ст.пр.', 'пр.', 'доц.', 'проф.')
+        positions = ('доц.', 'пр.-ст.', 'ст.пр.', 'пр.', 'проф.')
         position_index = 1
         lesson = lesson.replace('\n', ' ')
         for position in positions:

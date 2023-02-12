@@ -8,10 +8,9 @@ Return: return_description
 from itertools import groupby
 from uuid import uuid4
 from sqlalchemy.orm import Session
-from sqlalchemy import func, alias
 
-from models import Lesson, Teacher
-import schemas
+from .models import Lesson
+from .schemas import *
 
 
 def upload_excel_schedule(db: Session, schedule, faculty):
@@ -63,22 +62,6 @@ def upload_excel_schedule(db: Session, schedule, faculty):
     return 1
 
 
-def get_groups_by_faculty(faculty, db: Session):
-    """sumary_line
-
-    Keyword arguments:
-    argument -- description
-    Return: return_description
-    """
-
-    faculty_lessons = db.query(Lesson) \
-        .filter(Lesson.faculty == faculty) \
-        .order_by(Lesson.group_name).all()
-    groups = list({*[i.group_name for i in faculty_lessons]})
-    groups.sort()
-    return groups
-
-
 def get_lessons_by_teacher(teacher_name: str, db: Session):
     """sumary_line
 
@@ -113,60 +96,6 @@ def get_lessons_by_teacher(teacher_name: str, db: Session):
     return tmp_teachers_lessons
 
 
-def get_teachers(db: Session) -> list[Teacher]:
-    teachers: list[Teacher] = db.query(Teacher).all()
-    return teachers
-
-
-def get_teacher_by_name(db: Session, teacher_name: str):
-    return db.query(Teacher).filter(Teacher.teacher_name == teacher_name).first()
-
-
-def get_teachers_by_faculty(db: Session, faculty: str) -> list[Teacher]:
-    teachers_by_faculty: list[Teacher] = db.query(Teacher).filter(
-        Teacher.faculty == faculty).all()
-    return teachers_by_faculty
-
-
-def add_teachers(db: Session, teachers: list[schemas.TeacherCreate]) -> list[Teacher]:
-    new_teachers: list[Teacher] = []
-    for teacher in teachers:
-        tmp_teacher: Teacher = Teacher(
-            id=str(uuid4()),
-            **teacher.dict()
-        )
-        new_teachers.append(tmp_teacher)
-        db.add(tmp_teacher)
-        db.commit()
-        db.refresh(tmp_teacher)
-    return new_teachers
-
-
-def add_teacher(db: Session, teacher: schemas.TeacherCreate) -> Teacher:
-    tmp_teacher: Teacher = Teacher(
-        id=str(uuid4()),
-        **teacher.dict()
-    )
-    db.add(tmp_teacher)
-    db.commit()
-    db.refresh(tmp_teacher)
-    return tmp_teacher
-
-
-def delete_teacher(db: Session, teacher_id) -> None:
-    db.query(Teacher).filter(Teacher.id == teacher_id).delete()
-    db.commit()
-
-
-def delete_duplicate_teachers(db: Session) -> None:
-    inner_q = db.query(func.min(Teacher.id)).group_by(Teacher.teacher_name)
-    aliased = alias(inner_q)
-    q = db.query(Teacher).filter(~Teacher.id.in_(aliased))
-    for t in q:
-        db.delete(t)
-    db.commit()
-
-
 def get_groups(db: Session) -> list[str]:
     lessons = db.query(Lesson) \
         .order_by(Lesson.group_name).all()
@@ -177,7 +106,7 @@ def get_groups(db: Session) -> list[str]:
     return groups
 
 
-def add_lesson(db: Session, lesson: schemas.LessonCreate) -> Lesson:
+def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
     tmp_lesson: Lesson = Lesson(**{'id': str(uuid4()), **lesson.dict()})
     db.add(tmp_lesson)
     db.commit()
