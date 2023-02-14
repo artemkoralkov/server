@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, alias
 
 from models import Lesson, Teacher
+from is_teahcer_lessons_equal import is_teahcer_lessons_equal
 import schemas
 
 
@@ -109,11 +110,32 @@ def get_lessons_by_teacher(teacher_name: str, db: Session):
     for i in teachers_lessons:
         for key, group in groupby(teachers_lessons[i], key=lambda item: vars(item)['lesson_number']):
             tmp_teachers_lessons[i][int(key)].extend(list(group))
-
+    print(tmp_teachers_lessons['Saturday'])
+    for days in tmp_teachers_lessons:
+        for lessons_index in range(len(tmp_teachers_lessons[days])):
+            lessons = tmp_teachers_lessons[days][lessons_index]
+            if len(lessons) == 2:
+                first_lesson_dict = lessons[0].__dict__
+                second_lesson_dict = lessons[1].__dict__
+                if is_teahcer_lessons_equal(first_lesson_dict, second_lesson_dict):
+                    group = f'{first_lesson_dict["group_name"]}, {second_lesson_dict["group_name"]}'
+                    id = f'{first_lesson_dict["id"]}, {second_lesson_dict["id"]}'
+                    del first_lesson_dict["id"]
+                    del first_lesson_dict['group_name']
+                    del first_lesson_dict['_sa_instance_state']
+                    tmp_teachers_lessons[days][lessons_index] = [
+                        Lesson(
+                            id = id,
+                            group_name = group,
+                            **first_lesson_dict,
+                            
+                        )
+                    ] 
+    print(tmp_teachers_lessons['Saturday'])
     return tmp_teachers_lessons
 
 
-def get_teachers(db: Session) -> list[Teacher]:
+def get_teachers(db: Session) -> 'list[Teacher]':
     teachers: list[Teacher] = db.query(Teacher).all()
     return teachers
 
@@ -122,13 +144,13 @@ def get_teacher_by_name(db: Session, teacher_name: str):
     return db.query(Teacher).filter(Teacher.teacher_name == teacher_name).first()
 
 
-def get_teachers_by_faculty(db: Session, faculty: str) -> list[Teacher]:
+def get_teachers_by_faculty(db: Session, faculty: str) -> 'list[Teacher]':
     teachers_by_faculty: list[Teacher] = db.query(Teacher).filter(
         Teacher.faculty == faculty).all()
     return teachers_by_faculty
 
 
-def add_teachers(db: Session, teachers: list[schemas.TeacherCreate]) -> list[Teacher]:
+def add_teachers(db: Session, teachers: 'list[schemas.TeacherCreate]') -> 'list[Teacher]':
     new_teachers: list[Teacher] = []
     for teacher in teachers:
         tmp_teacher: Teacher = Teacher(
@@ -167,7 +189,7 @@ def delete_duplicate_teachers(db: Session) -> None:
     db.commit()
 
 
-def get_groups(db: Session) -> list[str]:
+def get_groups(db: Session) -> 'list[str]':
     lessons = db.query(Lesson) \
         .order_by(Lesson.group_name).all()
     groups = list({*[lesson.group_name for lesson in lessons]})
@@ -185,7 +207,7 @@ def add_lesson(db: Session, lesson: schemas.LessonCreate) -> Lesson:
     return tmp_lesson
 
 
-def get_lessons(db: Session) -> list[Lesson]:
+def get_lessons(db: Session) -> 'list[Lesson]':
     return db.query(Lesson).all()
 
 
@@ -219,7 +241,7 @@ def delete_lesson(db: Session, lesson_id):
     db.commit()
 
 
-def edit_lesson(db: Session, lesson_id, lesson: dict[str, str]):
+def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
     db.query(Lesson).filter(Lesson.id == lesson_id).update({
         Lesson.lesson_title: lesson['lesson_title'],
         Lesson.group_name: lesson['group_name'],

@@ -37,7 +37,7 @@ def lesson_to_dict(lesson: str, group_number=None):
             'teacher_name': f'{teachers[group_number - 1]}, {smg_teacher}'
         }
     else:
-        positions = ('пр.-ст.', 'ст.пр.', 'пр.', 'доц.', 'проф.')
+        positions = ('проф.', 'доц.', 'пр.-ст.', 'ст.пр.', 'ст. пр.', 'пр.',)
         position_index = 1
         lesson = lesson.replace('\n', ' ')
         for position in positions:
@@ -62,7 +62,7 @@ def lesson_to_dict(lesson: str, group_number=None):
     }
 
 
-def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
+def excel_to_json(filename: str) -> 'dict[str, list[dict[str, str]]]':
     wb = load_workbook(filename)
     ws = wb.active
     schedule = {}
@@ -290,7 +290,7 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
 # print(
 #     lesson_to_dict("Физическая культура\nпр. Федорович В.К., пр. Таргонский Н.Н., пр. Маслова Е.А.,\nСМГ Болбас Е.В.")
 # )
-# filename = "B:/Downloads/Основное 22-23.xlsx"
+filename = "F:/work/Расписания и нагрузки/2022-2023/raspis_FIF__II_semestr_2022-2023.xlsx"
 # wb = load_workbook(filename)
 # ws = wb.active
 # upper_left_cell = ws['J40']
@@ -317,10 +317,10 @@ def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
 #             **lesson_to_dict(bottom_left_cell.value)
 #         },
 #     ])
-# with open('schedule.json', 'w', encoding='utf-8') as file:
-#     json.dump(
-#         excel_to_json(filename),
-#         file,
-#         ensure_ascii=False,
-#         indent=4
-#     )
+with open('schedule.json', 'w', encoding='utf-8') as file:
+    json.dump(
+        excel_to_json(filename),
+        file,
+        ensure_ascii=False,
+        indent=4
+    )
