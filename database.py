@@ -11,3 +11,14 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+Base.metadata.create_all(engine, checkfirst=True)
+
+
+def get_db():
+    """doc"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+

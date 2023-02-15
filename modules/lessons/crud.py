@@ -10,10 +10,10 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from .models import Lesson
-from .schemas import *
+from .schemas import LessonCreate
 
 
-def upload_excel_schedule(db: Session, schedule, faculty):
+async def upload_excel_schedule(db: Session, schedule, faculty):
     """sumary_line
 
     Keyword arguments:
@@ -62,7 +62,7 @@ def upload_excel_schedule(db: Session, schedule, faculty):
     return 1
 
 
-def get_lessons_by_teacher(teacher_name: str, db: Session):
+async def get_lessons_by_teacher(teacher_name: str, db: Session):
     """sumary_line
 
     Keyword arguments:
@@ -96,7 +96,7 @@ def get_lessons_by_teacher(teacher_name: str, db: Session):
     return tmp_teachers_lessons
 
 
-def get_groups(db: Session) -> list[str]:
+async def get_groups(db: Session) -> 'list[str]':
     lessons = db.query(Lesson) \
         .order_by(Lesson.group_name).all()
     groups = list({*[lesson.group_name for lesson in lessons]})
@@ -106,7 +106,7 @@ def get_groups(db: Session) -> list[str]:
     return groups
 
 
-def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
+async def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
     tmp_lesson: Lesson = Lesson(**{'id': str(uuid4()), **lesson.dict()})
     db.add(tmp_lesson)
     db.commit()
@@ -114,11 +114,11 @@ def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
     return tmp_lesson
 
 
-def get_lessons(db: Session) -> list[Lesson]:
+async def get_lessons(db: Session) -> 'list[Lesson]':
     return db.query(Lesson).all()
 
 
-def get_lessons_by_group(db: Session, group_name: str):
+async def get_lessons_by_group(group_name: str, db: Session):
     group_lessons: list[Lesson] = db.query(Lesson).filter(
         Lesson.group_name == group_name).all()
     group_lessons_by_days: dict[str, list[Lesson]] = {
@@ -143,12 +143,12 @@ def get_lessons_by_group(db: Session, group_name: str):
     return tmp_group_lessons
 
 
-def delete_lesson(db: Session, lesson_id):
+async def delete_lesson(db: Session, lesson_id):
     db.query(Lesson).filter(Lesson.id == lesson_id).delete()
     db.commit()
 
 
-def edit_lesson(db: Session, lesson_id, lesson: dict[str, str]):
+async def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
     db.query(Lesson).filter(Lesson.id == lesson_id).update({
         Lesson.lesson_title: lesson['lesson_title'],
         Lesson.group_name: lesson['group_name'],
@@ -164,3 +164,18 @@ def edit_lesson(db: Session, lesson_id, lesson: dict[str, str]):
     })
     db.commit()
     return {'id': lesson_id, **lesson}
+
+
+async def get_groups_by_faculty(faculty, db: Session):
+    """sumary_line
+    Keyword arguments:
+    argument -- description
+    Return: return_description
+    """
+
+    faculty_lessons = db.query(Lesson) \
+        .filter(Lesson.faculty == faculty) \
+        .order_by(Lesson.group_name).all()
+    groups = list({*[i.group_name for i in faculty_lessons]})
+    groups.sort()
+    return groups

@@ -62,7 +62,7 @@ def lesson_to_dict(lesson: str, group_number=None):
     }
 
 
-def excel_to_json(filename: str) -> dict[str, list[dict[str, str]]]:
+def excel_to_json(filename: str) -> 'dict[str, list[dict[str, str]]]':
     wb = load_workbook(filename)
     ws = wb.active
     schedule = {}
