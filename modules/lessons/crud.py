@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from .models import Lesson
 from .schemas import LessonCreate
+from .utils.is_teahcer_lessons_equal import is_teahcer_lessons_equal
 
 
 async def upload_excel_schedule(db: Session, schedule, faculty):
@@ -92,6 +93,27 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
     for i in teachers_lessons:
         for key, group in groupby(teachers_lessons[i], key=lambda item: vars(item)['lesson_number']):
             tmp_teachers_lessons[i][int(key)].extend(list(group))
+
+    for days in tmp_teachers_lessons:
+        for lessons_index in range(len(tmp_teachers_lessons[days])):
+            lessons = tmp_teachers_lessons[days][lessons_index]
+            if len(lessons) == 2:
+                first_lesson_dict = lessons[0].__dict__
+                second_lesson_dict = lessons[1].__dict__
+                if is_teahcer_lessons_equal(first_lesson_dict, second_lesson_dict):
+                    group = f'{first_lesson_dict["group_name"]}, {second_lesson_dict["group_name"]}'
+                    lesson_id = f'{first_lesson_dict["id"]}, {second_lesson_dict["id"]}'
+                    del first_lesson_dict["id"]
+                    del first_lesson_dict['group_name']
+                    del first_lesson_dict['_sa_instance_state']
+                    tmp_teachers_lessons[days][lessons_index] = [
+                        Lesson(
+                            id=lesson_id,
+                            group_name=group,
+                            **first_lesson_dict,
+
+                        )
+                    ]
 
     return tmp_teachers_lessons
 
