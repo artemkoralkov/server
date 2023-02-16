@@ -317,10 +317,11 @@ filename = "F:/work/Расписания и нагрузки/2022-2023/raspis_FI
 #             **lesson_to_dict(bottom_left_cell.value)
 #         },
 #     ])
-with open('schedule.json', 'w', encoding='utf-8') as file:
-    json.dump(
-        excel_to_json(filename),
-        file,
-        ensure_ascii=False,
-        indent=4
-    )
+#with open('schedule.json', 'w', encoding='utf-8') as file:
+#
+#    json.dump(
+#        excel_to_json(filename),
+#       file,
+#        ensure_ascii=False,
+#        indent=4
+#    )
