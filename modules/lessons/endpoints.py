@@ -12,7 +12,7 @@ from database import get_db
 templates = Jinja2Templates(directory='./templates')
 
 FACULTIES: 'dict[str, str]' = {'dino': 'ДиНО', 'fif': 'ФИФ',
-                             'ffk': 'ФФК', 'ff': 'ФФ', 'tbf': 'ТБФ'}
+                             'ffk': 'ФФК', 'ff': 'ФФ', 'tbfb': 'ТБФ(б)', 'tbft': 'ТБФ(т)'}
 
 lessons_router = APIRouter(
     prefix='/lessons',
@@ -55,7 +55,7 @@ async def get_groups(faculty='', db: Session = Depends(get_db)):
 async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Session = Depends(get_db)):
     with open(f'{file.filename}', 'wb+') as file_object:
         file_object.write(file.file.read())
-    schedule = excel_to_json(f'{file.filename}')
+    schedule = excel_to_json(f'{file.filename}', faculty)
     os.remove(f'{file.filename}')
     return await crud.upload_excel_schedule(db, schedule, FACULTIES[faculty])
 
