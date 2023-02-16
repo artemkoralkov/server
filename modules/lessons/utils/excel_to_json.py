@@ -62,20 +62,31 @@ def lesson_to_dict(lesson: str, group_number=None):
     }
 
 
-def excel_to_json(filename: str) -> 'dict[str, list[dict[str, str]]]':
+def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]]]':
     wb = load_workbook(filename)
     ws = wb.active
     schedule = {}
     course_numbers = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5}
-
+    print(faculty)
+    if faculty == 'tbfb':
+        lessons_start_row = 5
+        lessons_end_row = 75
+        groups_names_start_row = '4'
+        course_number_row = '3'
+    else:
+        lessons_start_row = 4
+        lessons_end_row = 74
+        groups_names_start_row = '3'
+        course_number_row = '2'
     column = 4
     # print('P4' in ws.merged_cells and 'Q4' in ws.merged_cells)
-    while ws[get_column_letter(column) + '3'].value:
-        group_number, speciality = list(map(lambda e: e.strip(), ws[get_column_letter(column) + '3'].value.split('\n')))
-        course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + '2'])
+    while ws[get_column_letter(column) + groups_names_start_row].value:
+        group_number, speciality =\
+            list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n')))
+        course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + course_number_row])
         current_group = f'{course_numbers[course_number]}/{group_number} {speciality}'
         schedule[current_group] = []
-        for row in range(4, 74, 2):
+        for row in range(lessons_start_row, lessons_end_row, 2):
             upper_left_cell = ws[get_column_letter(column) + str(row)]
             upper_right_cell = ws[get_column_letter(column + 1) + str(row)]
             bottom_left_cell = ws[get_column_letter(column) + str(row + 1)]
@@ -290,9 +301,18 @@ def excel_to_json(filename: str) -> 'dict[str, list[dict[str, str]]]':
 # print(
 #     lesson_to_dict("Физическая культура\nпр. Федорович В.К., пр. Таргонский Н.Н., пр. Маслова Е.А.,\nСМГ Болбас Е.В.")
 # )
-# filename = "B:/Downloads/Основное 22-23.xlsx"
+# filename = "F:/work/Расписания и нагрузки/2022-2023/БФ, 2022-2023 уч. г. 2 семестр,д-о.xlsx"
 # wb = load_workbook(filename)
 # ws = wb.active
+# lessons_start_row = 5 lessons_end_row = 75 groups_names_start_row = '4' course_number_row = '3' course_numbers = {
+# 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5} column = 4 while ws[get_column_letter(column) +
+# groups_names_start_row].value: print(column) print(get_column_letter(column) + groups_names_start_row) print(list(
+# map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n')))) group_number,
+# speciality = list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split(
+# '\n'))) course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + course_number_row]) current_group
+# = f'{course_numbers[course_number]}/{group_number} {speciality}'
+        
+#         column += 3
 # upper_left_cell = ws['J40']
 # upper_right_cell = ws['K40']
 # bottom_left_cell = ws['J41']
@@ -319,7 +339,7 @@ def excel_to_json(filename: str) -> 'dict[str, list[dict[str, str]]]':
 #     ])
 # with open('schedule.json', 'w', encoding='utf-8') as file:
 #     json.dump(
-#         excel_to_json(filename),
+#         excel_to_json(filename, faculty='tbfb'),
 #         file,
 #         ensure_ascii=False,
 #         indent=4
