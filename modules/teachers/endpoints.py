@@ -7,15 +7,10 @@ from sqlalchemy.orm import Session
 from .schemas import *
 import modules.teachers.crud as crud
 
-
-
 from database import get_db
-
+from constants import FACULTIES
 
 templates = Jinja2Templates(directory='./templates')
-
-FACULTIES: 'dict[str, str]' = {'dino': 'ДиНО', 'fif': 'ФИФ',
-                             'ffk': 'ФФК', 'ff': 'ФФ', 'tbf': 'ТБФ'}
 
 teachers_router = APIRouter(
     prefix='/teachers',

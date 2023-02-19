@@ -8,11 +8,9 @@ from .schemas import *
 from modules.lessons.utils.excel_to_json import excel_to_json
 import modules.lessons.crud as crud
 from database import get_db
+from constants import FACULTIES
 
 templates = Jinja2Templates(directory='./templates')
-
-FACULTIES: 'dict[str, str]' = {'dino': 'ДиНО', 'fif': 'ФИФ',
-                             'ffk': 'ФФК', 'ff': 'ФФ', 'tbfb': 'ТБФ(б)', 'tbft': 'ТБФ(т)'}
 
 lessons_router = APIRouter(
     prefix='/lessons',
