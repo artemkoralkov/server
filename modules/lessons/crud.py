@@ -143,7 +143,7 @@ async def get_lessons(db: Session) -> 'list[Lesson]':
 
 async def get_lessons_by_group(group_name: str, db: Session):
     group_lessons: list[Lesson] = db.query(Lesson).filter(
-        Lesson.group_name == group_name).order_by(Lesson.first_group, Lesson.numerator).all()
+        Lesson.group_name == group_name).all()
     group_lessons_by_days: dict[str, list[Lesson]] = {
         'Monday': [i for i in group_lessons if i.day == 1],
         'Tuesday': [i for i in group_lessons if i.day == 2],
