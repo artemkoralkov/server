@@ -67,7 +67,6 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
     ws = wb.active
     schedule = {}
     course_numbers = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5}
-    print(faculty)
     if faculty == 'tbfb':
         lessons_start_row = 5
         lessons_end_row = 75
