@@ -6,7 +6,10 @@ def handle_combined_lessons(lessons):
         first_lesson_dict = lessons[0].__dict__
         second_lesson_dict = lessons[1].__dict__
         if is_teahcer_lessons_equal(first_lesson_dict, second_lesson_dict):
-            group = f'{first_lesson_dict["group_name"]}, {second_lesson_dict["group_name"]}'
+            if first_lesson_dict["group_name"][:3] + first_lesson_dict["group_name"][5:] == second_lesson_dict["group_name"][:3] + second_lesson_dict["group_name"][5:]:
+                group = first_lesson_dict["group_name"][:3] + first_lesson_dict["group_name"][5:]
+            else:
+                group = f'{first_lesson_dict["group_name"]}, {second_lesson_dict["group_name"]}'
             lesson_id = f'{first_lesson_dict["id"]}, {second_lesson_dict["id"]}'
             del first_lesson_dict["id"]
             del first_lesson_dict['group_name']
