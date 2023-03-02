@@ -71,8 +71,13 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
     argument -- description
     Return: return_description
     """
+    last_name = 0
+    for c in teacher_name:
+        if c.isupper():
+            last_name = teacher_name.find(c)
+            break
     teachers_lessons = db.query(Lesson) \
-        .filter(Lesson.teacher_name.like(f'%{teacher_name}')) \
+        .filter(Lesson.teacher_name.like(f'%{teacher_name[last_name:]}')) \
         .order_by(Lesson.day, Lesson.lesson_number).all()
     teachers_lessons = {
         'Monday': [i for i in teachers_lessons if i.day == 1],
@@ -154,6 +159,9 @@ async def delete_lesson(db: Session, lesson_id):
     db.query(Lesson).filter(Lesson.id == lesson_id).delete()
     db.commit()
 
+async def delete_lessons_by_faculty(db: Session, faculty):
+    db.query(Lesson).filter(Lesson.faculty == faculty).delete()
+    db.commit()
 
 async def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
     db.query(Lesson).filter(Lesson.id == lesson_id).update({

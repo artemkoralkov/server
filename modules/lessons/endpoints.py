@@ -73,3 +73,7 @@ async def edit_lesson(lesson_id, incoming_lesson: Request, db=Depends(get_db)):
 @lessons_router.delete('/{lesson_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_lesson(lesson_id, db=Depends(get_db)):
     return await crud.delete_lesson(db, lesson_id)
+
+@lessons_router.delete('', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_lessons(faculty, db=Depends(get_db)):
+    await crud.delete_lessons_by_faculty(db, FACULTIES[faculty])
