@@ -45,7 +45,7 @@ async def upload_excel_schedule_form(request: Request, faculty):
 @lessons_router.get('/groups', status_code=status.HTTP_200_OK)
 async def get_groups(faculty='', db: Session = Depends(get_db)):
     if faculty:
-        return await crud.get_groups_by_faculty(FACULTIES[faculty], db)
+        return await crud.get_groups(db, FACULTIES[faculty])
     return await crud.get_groups(db)
 
 

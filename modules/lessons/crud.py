@@ -108,13 +108,18 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
     return tmp_teachers_lessons
 
 
-async def get_groups(db: Session) -> 'list[str]':
-    lessons = db.query(Lesson) \
-        .order_by(Lesson.group_name).all()
-    groups = list({*[lesson.group_name for lesson in lessons]})
-    groups.sort()
-    groups: list[str] = list(map(lambda g: ' '.join(
-        [i for i in g.split(' ') if i != '']), groups))
+async def get_groups(db: Session, faculty=None) -> 'list(dict(str, str))':
+    if faculty:
+        lessons = db.query(Lesson).filter(Lesson.faculty == faculty) \
+            .order_by(Lesson.group_name).all()
+    else:
+        lessons = db.query(Lesson) \
+            .order_by(Lesson.group_name).all()
+    groups = [{'group': ' '.join(lesson.group_name.split()), 'faculty': lesson.faculty} for lesson in lessons]
+    groups = [dict(t) for t in {tuple(d.items()) for d in groups}]
+    groups.sort(key=itemgetter('group'))
+    # groups: list[str] = list(map(lambda g: ' '.join(
+    #     [i for i in g.split(' ') if i != '']), groups))
     return groups
 
 
@@ -159,9 +164,11 @@ async def delete_lesson(db: Session, lesson_id):
     db.query(Lesson).filter(Lesson.id == lesson_id).delete()
     db.commit()
 
+
 async def delete_lessons_by_faculty(db: Session, faculty):
     db.query(Lesson).filter(Lesson.faculty == faculty).delete()
     db.commit()
+
 
 async def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
     db.query(Lesson).filter(Lesson.id == lesson_id).update({
@@ -179,18 +186,3 @@ async def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
     })
     db.commit()
     return {'id': lesson_id, **lesson}
-
-
-async def get_groups_by_faculty(faculty, db: Session):
-    """sumary_line
-    Keyword arguments:
-    argument -- description
-    Return: return_description
-    """
-
-    faculty_lessons = db.query(Lesson) \
-        .filter(Lesson.faculty == faculty) \
-        .order_by(Lesson.group_name).all()
-    groups = list({*[i.group_name for i in faculty_lessons]})
-    groups.sort()
-    return groups
