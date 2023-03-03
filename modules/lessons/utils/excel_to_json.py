@@ -18,6 +18,7 @@ def is_merged_sell(cell) -> bool:
 
 
 def lesson_to_dict(lesson: str, faculty=None, group_number=None):
+    # print(lesson)
     if lesson is None:
         return {'lesson': None}
     elif 'СМГ' in lesson and group_number:
@@ -27,7 +28,9 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
         teachers = teachers.split(', ')
         smg_teacher = teachers[[teachers.index(i) for i in teachers if 'СМГ' in i][0]]
         teachers.remove(smg_teacher)
-        if group_number == 4 and faculty != 'dino':
+        if faculty == 'tbft':
+            group_number = group_number - 2
+        elif group_number == 4 and faculty != 'dino':
             return {
                 'lesson_title': 'Физическая культура',
                 'teacher_name': f'{teachers[group_number - 2]}, {smg_teacher}'
@@ -63,8 +66,8 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
             if lesson_name[left_bracket_index + 1: right_bracket_index] in lesson_types:
                 lesson_type = lesson_name[left_bracket_index + 1: right_bracket_index]
     return {
-        'lesson_title': lesson_name.replace(f'({lesson_type})', '').strip(),
-        'teacher_name': lesson_teacher.replace(f'({lesson_type})', '').strip(),
+        'lesson_title': ' '.join(lesson_name.replace(f'({lesson_type})', '').strip().split()),
+        'teacher_name': ' '.join(lesson_teacher.replace(f'({lesson_type})', '').strip().split()),
         'lesson_type': lesson_type.strip().replace(' ', '').replace('  ', '')
     }
 
@@ -84,6 +87,11 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
         lessons_end_row = 64
         groups_names_start_row = '3'
         course_number_row = '2'
+    elif faculty == 'tbft':
+        lessons_start_row = 4
+        lessons_end_row = 72
+        groups_names_start_row = '3'
+        course_number_row = '2'
     else:
         lessons_start_row = 4
         lessons_end_row = 74
@@ -91,6 +99,7 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
         course_number_row = '2'
     column = 4
     while ws[get_column_letter(column) + groups_names_start_row].value:
+        # print(list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n'))))
         group_number, speciality =\
             list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n')))
         course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + course_number_row])
@@ -310,6 +319,8 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
                 print('-----')
                 schedule[current_group].append(None)
         column += 3
+        if faculty == 'tbft':
+            schedule[current_group].append([{'lesson': None}])
         schedule[current_group] = split_list_by_parts(schedule[current_group], max_lessons)
     return schedule
 
@@ -357,10 +368,10 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
 #             **lesson_to_dict(bottom_left_cell.value)
 #         },
 #     ])
-# filename = "F:/work/Расписания и нагрузки/2022-2023/Расписание учебных занятий факультета ДиНО (дневное) 2семестр (2022-2023).xlsx"
+# filename = "F:/work/Расписания и нагрузки/2022-2023/2_семестр_2023__.xlsx"
 # with open('schedule.json', 'w', encoding='utf-8') as file:
 #     json.dump(
-#         excel_to_json(filename, faculty='dino'),
+#         excel_to_json(filename, faculty='tbft'),
 #         file,
 #         ensure_ascii=False,
 #         indent=4
