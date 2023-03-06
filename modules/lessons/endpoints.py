@@ -19,8 +19,10 @@ lessons_router = APIRouter(
 
 
 @lessons_router.get('/', status_code=status.HTTP_200_OK)
-async def get_lessons(group_name='', teacher_name='', db: Session = Depends(get_db)):
-    if group_name:
+async def get_lessons(faculty='', group_name='', teacher_name='', db: Session = Depends(get_db)):
+    if faculty:
+        result = await crud.get_lessons_by_faculty(FACULTIES[faculty], db)
+    elif group_name:
         result = await crud.get_lessons_by_group(group_name, db)
     elif teacher_name:
         result = await crud.get_lessons_by_teacher(teacher_name, db)

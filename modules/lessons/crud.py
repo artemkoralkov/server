@@ -108,7 +108,7 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
     return tmp_teachers_lessons
 
 
-async def get_groups(db: Session, faculty=None) -> 'list(dict(str, str))':
+async def get_groups(db: Session, faculty=None):
     if faculty:
         lessons = db.query(Lesson).filter(Lesson.faculty == faculty) \
             .order_by(Lesson.group_name).all()
@@ -133,6 +133,9 @@ async def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
 
 async def get_lessons(db: Session) -> 'list[Lesson]':
     return db.query(Lesson).all()
+
+async def get_lessons_by_faculty(faculty: str, db: Session):
+    return db.query(Lesson).filter(Lesson.faculty == faculty).all()
 
 
 async def get_lessons_by_group(group_name: str, db: Session):
