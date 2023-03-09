@@ -21,6 +21,7 @@ def handle_combined_lessons(lessons):
         first_lesson_dict = lessons[0].__dict__
         second_lesson_dict = lessons[1].__dict__
         third_lesson_dict = lessons[2].__dict__
+        print(first_lesson_dict, second_lesson_dict, third_lesson_dict)
         if is_teahcer_lessons_equal(first_lesson_dict, second_lesson_dict) and not is_teahcer_lessons_equal(first_lesson_dict, third_lesson_dict):
             if first_lesson_dict["group_name"][:3] + first_lesson_dict["group_name"][5:] == second_lesson_dict["group_name"][:3] + second_lesson_dict["group_name"][5:]:
                 group = first_lesson_dict["group_name"][:3] + first_lesson_dict["group_name"][5:]
@@ -58,11 +59,11 @@ def handle_combined_lessons(lessons):
             return [Lesson(id=lesson_id, group_name=group, **second_lesson_dict), Lesson(**first_lesson_dict)]
         elif is_teahcer_lessons_equal(first_lesson_dict, second_lesson_dict) and is_teahcer_lessons_equal(first_lesson_dict, third_lesson_dict):
             group = f'{first_lesson_dict["group_name"]}, {second_lesson_dict["group_name"]}, {third_lesson_dict["group_name"]}'
-            lesson_id = f'{first_lesson_dict["group_name"]}, {second_lesson_dict["id"]}, {third_lesson_dict["id"]}'
+            lesson_id = f'{first_lesson_dict["id"]}, {second_lesson_dict["id"]}, {third_lesson_dict["id"]}'
             del first_lesson_dict["id"]
             del first_lesson_dict['group_name']
             del first_lesson_dict['_sa_instance_state']
-            return [Lesson(id=lesson_id, group_name=group, **second_lesson_dict)]
+            return [Lesson(id=lesson_id, group_name=group, **first_lesson_dict)]
         else:
             return lessons
  
