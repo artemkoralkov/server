@@ -1,8 +1,7 @@
 from .is_teahcer_lessons_equal import is_teahcer_lessons_equal
 from ..models import Lesson
 
-def handle_combined_lessons(lessons):
-    print(lessons)
+def handle_combined_lessons(lessons: 'list[Lesson|None]') -> 'list[Lesson|None]':
     if len(lessons) == 2:
         first_lesson_dict = lessons[0].__dict__
         second_lesson_dict = lessons[1].__dict__
@@ -80,6 +79,9 @@ def handle_combined_lessons(lessons):
             del first_lesson_dict['group_name']
             del first_lesson_dict['_sa_instance_state']
             return [Lesson(id=lesson_id, group_name=group, **first_lesson_dict)]
-        else:
-            return lessons
-        
+        # elif is_teahcer_lessons_equal(first_lesson_dict, second_lesson_dict) and \
+        #      not is_teahcer_lessons_equal(first_lesson_dict, third_lesson_dict) and \
+        #      not is_teahcer_lessons_equal(first_lesson_dict, fourth_lesson_dict):
+        #      pass
+        # elif 
+    return lessons

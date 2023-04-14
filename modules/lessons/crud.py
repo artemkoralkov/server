@@ -1,10 +1,3 @@
-"""sumary_line
-
-Keyword arguments:
-argument -- description
-Return: return_description
-"""
-
 from itertools import groupby
 from operator import itemgetter
 from uuid import uuid4
@@ -16,13 +9,6 @@ from .utils.handle_combined_lessons import handle_combined_lessons
 
 
 async def upload_excel_schedule(db: Session, schedule, faculty):
-    """sumary_line
-
-    Keyword arguments:
-    argument -- description
-    Return: return_description
-    """
-
     db.query(Lesson).filter(Lesson.faculty == faculty).delete()
     db.commit()
     for group, days in schedule.items():
@@ -65,12 +51,6 @@ async def upload_excel_schedule(db: Session, schedule, faculty):
 
 
 async def get_lessons_by_teacher(teacher_name: str, db: Session):
-    """sumary_line
-
-    Keyword arguments:
-    argument -- description
-    Return: return_description
-    """
     last_name = 0
     for c in teacher_name:
         if c.isupper():
@@ -88,7 +68,7 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
         'Saturday': [i for i in teachers_lessons if i.day == 6],
     }
 
-    tmp_teachers_lessons = {
+    tmp_teachers_lessons: dict[str, list[list[Lesson | None]]] = {
         'Monday': [[], [], [], [], [], []],
         'Tuesday': [[], [], [], [], [], []],
         'Wednesday': [[], [], [], [], [], []],

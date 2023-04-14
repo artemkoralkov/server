@@ -1,10 +1,3 @@
-"""sumary_line
-
-Keyword arguments:
-argument -- description
-Return: return_description
-"""
-
 from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy import func, alias

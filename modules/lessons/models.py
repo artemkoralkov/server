@@ -4,7 +4,7 @@ from database import Base
 
 
 class Lesson(Base):
-    __tablename__ = "lessons"
+    __tablename__ = 'lessons'
     id: Column = Column(String, primary_key=True, index=True)
     lesson_title: Column = Column(String, index=True)
     group_name: Column = Column(String, index=True)

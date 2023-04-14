@@ -32,7 +32,7 @@ async def delete_duplicate_teachers(db=Depends(get_db)):
 
 
 @teachers_router.get('/add_teacher')
-async def add_teacher(request: Request):
+async def get_add_teacher_form(request: Request):
     return templates.TemplateResponse(
         'add_teacher_form.html',
         {
@@ -48,7 +48,7 @@ async def add_teacher(
 ):
     db_teacher = await crud.get_teacher_by_name(db, teacher_name)
     if db_teacher:
-        raise HTTPException(status_code=400, detail="Teacher is already exist")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Teacher is already exist')
 
     teacher: TeacherCreate = TeacherCreate(teacher_name=teacher_name, faculty=faculty)
     return await crud.add_teacher(db, teacher)
