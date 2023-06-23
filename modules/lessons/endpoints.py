@@ -1,16 +1,17 @@
 import os
 from fastapi import Depends, UploadFile, File, Request, APIRouter, status
-from fastapi.templating import Jinja2Templates
+# from fastapi.templating import Jinja2Templates
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from .schemas import *
+from modules.lessons.schemas import *
 
 from modules.lessons.utils.excel_to_json import excel_to_json
-import modules.lessons.crud as crud
+from modules.lessons import crud
 from database import get_db
 from constants import FACULTIES
 
-templates = Jinja2Templates(directory='./templates')
+# templates = Jinja2Templates(directory='./templates')
 
 lessons_router = APIRouter(
     prefix='/lessons',
@@ -34,14 +35,15 @@ async def get_lessons(faculty='', group_name='', teacher_name='', db: Session = 
 @lessons_router.get('/upload_excel_schedule', status_code=status.HTTP_200_OK)
 async def upload_excel_schedule_form(request: Request, faculty):
     """Generate HTML form for upload .xlsx file with schedule to server"""
-    return templates.TemplateResponse(
-        'upload_excel_form.html',
-        {
-            'request': request,
-            'faculties': FACULTIES,
-            'faculty': faculty,
-        }
-    )
+    return 1
+    # return templates.TemplateResponse(
+    #     'upload_excel_form.html',
+    #     {
+    #         'request': request,
+    #         'faculties': FACULTIES,
+    #         'faculty': faculty,
+    #     }
+    # )
 
 
 @lessons_router.get('/groups', status_code=status.HTTP_200_OK)
@@ -61,14 +63,15 @@ async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Sessi
 
 
 @lessons_router.post('/', status_code=status.HTTP_201_CREATED)
-async def add_lesson(json_lesson: Request, db=Depends(get_db)):
-    lesson: LessonCreate = await json_lesson.json()
+async def add_lesson(lesson: LessonCreate, db=Depends(get_db)):
+    print(lesson)
+    # lesson: LessonCreate = await json_lesson.json()
     return await crud.add_lesson(db, lesson)
 
 
 @lessons_router.put('/{lesson_id}', status_code=status.HTTP_200_OK)
-async def edit_lesson(lesson_id, incoming_lesson: Request, db=Depends(get_db)):
-    lesson: dict[str, str] = await incoming_lesson.json()
+async def edit_lesson(lesson_id, incoming_lesson: LessonCreate, db=Depends(get_db)):
+    lesson: dict[str, str] = jsonable_encoder(incoming_lesson)
     return await crud.edit_lesson(db, lesson_id, lesson)
 
 

@@ -1,13 +1,14 @@
 from uuid import uuid4
 from sqlalchemy.orm import Session
-from sqlalchemy import func, alias
+from sqlalchemy import func, alias, select
 
-from .models import Teacher
+from modules.teachers.models import Teacher
 
 
 async def get_teachers(db: Session):
-    teachers: list[Teacher] = db.query(Teacher).all()
-    return teachers
+    # teachers: list[Teacher] = db.query(Teacher).all()
+    # return teachers
+    return db.execute(select(Teacher)).scalars().all()
 
 
 async def get_teacher_by_name(db: Session, teacher_name: str):

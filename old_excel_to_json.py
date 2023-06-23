@@ -14,7 +14,7 @@ def split(a, n):
     return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
 
 
-def lesson_to_dict(lesson: str) -> dict[str, str] | dict[str, str | list[str]] | dict[str, None]:
+def lesson_to_dict(lesson: str) -> 'dict[str, str] | dict[str, str | list[str]] | dict[str, None]':
     """
     Keyword arguments:
     argument -- description
@@ -91,7 +91,7 @@ def excel_to_json(filename):
 
     wb = load_workbook(filename=filename)
     ws = wb.active
-    schedule = {}
+    schedule: 'dict[str, list]' = {}
     course_numbers = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5}
 
     c = 0

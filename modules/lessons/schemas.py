@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class LessonBase(BaseModel):
     lesson_title: str
+    room_number: int
     group_name: str
     teacher_name: str
     faculty: str
@@ -21,6 +22,5 @@ class LessonCreate(LessonBase):
 
 class Lesson(LessonCreate):
     id: str
-
     class Config:
         orm_mode = True

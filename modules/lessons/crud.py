@@ -2,10 +2,11 @@ from itertools import groupby
 from operator import itemgetter
 from uuid import uuid4
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
 
-from .models import Lesson
-from .schemas import LessonCreate
-from .utils.handle_combined_lessons import handle_combined_lessons
+from modules.lessons.models import Lesson
+from modules.lessons.schemas import LessonCreate
+from modules.lessons.utils.handle_combined_lessons import handle_combined_lessons
 
 
 async def upload_excel_schedule(db: Session, schedule, faculty):
@@ -27,7 +28,8 @@ async def upload_excel_schedule(db: Session, schedule, faculty):
                             lesson_number=lesson_number,
                             group_name=group,
                             faculty=faculty,
-                            **i
+                            room_number=0,
+                            **i,
                         )
                         db.add(tmp_lesson)
                         db.commit()
@@ -41,7 +43,8 @@ async def upload_excel_schedule(db: Session, schedule, faculty):
                         lesson_number=lesson_number,
                         group_name=group,
                         faculty=faculty,
-                        **lesson
+                        room_number=0,
+                        **lesson,
                     )
                     db.add(tmp_lesson)
                     db.commit()
@@ -95,9 +98,9 @@ async def get_groups(db: Session, faculty=None):
     else:
         lessons = db.query(Lesson) \
             .order_by(Lesson.group_name).all()
-    groups = [{'group': ' '.join(lesson.group_name.split()), 'faculty': lesson.faculty} for lesson in lessons]
+    groups = [{'group_name': ' '.join(lesson.group_name.split()), 'faculty': lesson.faculty} for lesson in lessons]
     groups = [dict(t) for t in {tuple(d.items()) for d in groups}]
-    groups.sort(key=itemgetter('group'))
+    groups.sort(key=itemgetter('group_name'))
     # groups: list[str] = list(map(lambda g: ' '.join(
     #     [i for i in g.split(' ') if i != '']), groups))
     return groups
@@ -113,6 +116,7 @@ async def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
 
 async def get_lessons(db: Session) -> 'list[Lesson]':
     return db.query(Lesson).all()
+
 
 async def get_lessons_by_faculty(faculty: str, db: Session):
     return db.query(Lesson).filter(Lesson.faculty == faculty).all()
@@ -153,7 +157,23 @@ async def delete_lessons_by_faculty(db: Session, faculty):
     db.commit()
 
 
-async def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
+async def edit_lesson(db: Session, lesson_id, lesson):
+    # db_lesson = jsonable_encoder(db.query(Lesson).filter(Lesson.id == lesson_id).first())
+    # if isinstance(lesson, dict):
+    #         update_data = lesson
+    # else:
+    #     update_data = lesson.dict(exclude_unset=True)
+    # print(update_data)
+    # print(db_lesson)
+    # for field in lesson:
+    #     if field in update_data:
+    #         print(field)
+    #         print(db_lesson[field])
+    #         setattr(db_lesson, field, update_data[field])
+    # db.add(db_lesson)
+    # db.commit()
+    # db.refresh(db_lesson)
+    # return db_lesson
     db.query(Lesson).filter(Lesson.id == lesson_id).update({
         Lesson.lesson_title: lesson['lesson_title'],
         Lesson.group_name: lesson['group_name'],
@@ -165,7 +185,7 @@ async def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
         Lesson.numerator: lesson['numerator'],
         Lesson.denominator: lesson['denominator'],
         Lesson.first_group: lesson['first_group'],
-        Lesson.second_group: lesson['second_group']
+        Lesson.second_group: lesson['second_group'],
     })
     db.commit()
     return {'id': lesson_id, **lesson}

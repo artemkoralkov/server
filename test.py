@@ -6,7 +6,8 @@ import requests
 # files = {'file': open('E:/raspis_FIF__I_semestr_2021-2022.xlsx','rb')}
 
 # url = 'http://127.0.0.1:8000/uploadfile/fif'
-url = 'http://127.0.0.1:8000/teachers/add_teachers'
+url = 'http://127.0.0.1:8000/teachers/'
+print(requests.post(url, data={'teacher_name': 'test', 'faculty': 'test'}).text)
 
 
 # lesson ='Безопасность жизнедеятельности человека (лк)+ФФ,ФФК доц. Николаенко Т.В.'
@@ -108,8 +109,8 @@ teachers= [{'id': str(uuid4()), 'teacher_name': i, 'faculty': 'ДиНО'} for i 
 # teachers= [{'teacher_name': "ст.пр. Варнава З.С.", 'faculty': 'ФИФ'}, {'teacher_name': "доц. Телепень С.В.", 'faculty': 'ФИФ'}]
 # teacher = {'id': str(uuid4()), 'teacher_name': 'пр.-ст. Коральков А.Д.', 'faculty': 'ФИФ'}
 # print(teacher)
-r = requests.post(url, json=teachers)
-print(r.text)
+# r = requests.post(url, json=teachers)
+# print(r.text)
 
 FACULTIES = {'fif': 'ФИФ', 'ffk': 'ФФК', 'ff': 'ФФ', 'tbf': 'ТБФ', 'dino': 'ДиНО'}
 # print(list(FACULTIES.values()))

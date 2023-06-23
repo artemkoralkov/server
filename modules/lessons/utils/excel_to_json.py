@@ -1,6 +1,6 @@
 from openpyxl.utils import get_column_letter
 from openpyxl.reader.excel import load_workbook
-import json
+# import json
 
 
 def split_list_by_parts(lst: list, parts: int) -> list:
@@ -71,6 +71,7 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
         'lesson_type': lesson_type.strip().replace(' ', '').replace('  ', '')
     }
 
+
 def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]]]':
     wb = load_workbook(filename)
     ws = wb.active
@@ -99,8 +100,7 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
         course_number_row = '2'
     column = 4
     while ws[get_column_letter(column) + groups_names_start_row].value:
-        # print(list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n'))))
-        group_number, speciality =\
+        group_number, speciality = \
             list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n')))
         course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + course_number_row])
         current_group = f'{course_numbers[course_number]}/{group_number} {speciality}'
@@ -301,7 +301,8 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
                         **lesson_to_dict(bottom_right_cell.value, faculty)
                     },
                 ])
-            elif is_merged_sell(upper_left_cell) and is_merged_sell(bottom_left_cell) and not is_merged_sell(upper_right_cell) and is_merged_sell(bottom_right_cell):
+            elif is_merged_sell(upper_left_cell) and is_merged_sell(bottom_left_cell) and not is_merged_sell(
+                    upper_right_cell) and is_merged_sell(bottom_right_cell):
                 schedule[current_group].append([
                     {
                         'first_group': True,
@@ -324,7 +325,6 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
         schedule[current_group] = split_list_by_parts(schedule[current_group], max_lessons)
     return schedule
 
-
 # lessons = excel_to_json("B:/Downloads/raspis_FIF__I_semestr_2022-2023.xlsx")
 # with open('schedule.json', 'r', encoding='utf-8') as file:
 #     schedule = json.load(file)
@@ -342,7 +342,7 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
 # speciality = list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split(
 # '\n'))) course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + course_number_row]) current_group
 # = f'{course_numbers[course_number]}/{group_number} {speciality}'
-        
+
 #         column += 3
 # upper_left_cell = ws['J40']
 # upper_right_cell = ws['K40']

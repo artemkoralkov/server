@@ -1,16 +1,16 @@
 from typing import List
 from fastapi import Depends, Request, Form, HTTPException, APIRouter, status
 
-from fastapi.templating import Jinja2Templates
+# from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from .schemas import *
-import modules.teachers.crud as crud
+from modules.teachers.schemas import *
+from  modules.teachers import crud
 
 from database import get_db
 from constants import FACULTIES
 
-templates = Jinja2Templates(directory='./templates')
+# templates = Jinja2Templates(directory='./templates')
 
 teachers_router = APIRouter(
     prefix='/teachers',
@@ -26,23 +26,20 @@ async def get_teachers(faculty='', db=Depends(get_db)):
         return await crud.get_teachers(db)
 
 
-@teachers_router.get('/delete_duplicate_teachers')
-async def delete_duplicate_teachers(db=Depends(get_db)):
-    return await crud.delete_duplicate_teachers(db)
-
 
 @teachers_router.get('/add_teacher')
 async def get_add_teacher_form(request: Request):
-    return templates.TemplateResponse(
-        'add_teacher_form.html',
-        {
-            'request': request,
-            'faculties': list(FACULTIES.values())
-        }
-    )
+    return 1
+    # return templates.TemplateResponse(
+    #     'add_teacher_form.html',
+    #     {
+    #         'request': request,
+    #         'faculties': list(FACULTIES.values())
+    #     }
+    # )
 
 
-@teachers_router.post('/add_teacher', status_code=status.HTTP_201_CREATED)
+@teachers_router.post('/', status_code=status.HTTP_201_CREATED)
 async def add_teacher(
         request: Request, teacher_name: str = Form(...), faculty: str = Form(...), db: Session = Depends(get_db)
 ):
