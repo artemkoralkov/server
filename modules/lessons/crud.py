@@ -95,9 +95,9 @@ async def get_groups(db: Session, faculty=None):
     else:
         lessons = db.query(Lesson) \
             .order_by(Lesson.group_name).all()
-    groups = [{'group': ' '.join(lesson.group_name.split()), 'faculty': lesson.faculty} for lesson in lessons]
+    groups = [{'group_name': ' '.join(lesson.group_name.split()), 'faculty': lesson.faculty} for lesson in lessons]
     groups = [dict(t) for t in {tuple(d.items()) for d in groups}]
-    groups.sort(key=itemgetter('group'))
+    groups.sort(key=itemgetter('group_name'))
     # groups: list[str] = list(map(lambda g: ' '.join(
     #     [i for i in g.split(' ') if i != '']), groups))
     return groups
