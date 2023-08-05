@@ -1,10 +1,10 @@
-fastapi==0.101.0
-openpyxl==3.1.2
+fastapi
+openpyxl
 python-multipart
-SQLAlchemy==2.0.19
-uvicorn==0.23.2
-requests==2.31.0
+SQLAlchemy
+uvicorn
+requests
 jinja2
-pydantic==2.1.1
+pydantic
 bcrypt
 passlib
