@@ -4,7 +4,7 @@ from fastapi import Depends, Request, Form, HTTPException, APIRouter, status
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from .schemas import *
+from modules.teachers.schemas import *
 import modules.teachers.crud as crud
 
 from database import get_db
@@ -18,7 +18,7 @@ teachers_router = APIRouter(
 )
 
 
-@teachers_router.get('/')
+@teachers_router.get('')
 async def get_teachers(faculty='', db=Depends(get_db)):
     if faculty:
         return await crud.get_teachers_by_faculty(db, FACULTIES[faculty])
@@ -26,9 +26,9 @@ async def get_teachers(faculty='', db=Depends(get_db)):
         return await crud.get_teachers(db)
 
 
-@teachers_router.get('/delete_duplicate_teachers')
-async def delete_duplicate_teachers(db=Depends(get_db)):
-    return await crud.delete_duplicate_teachers(db)
+# @teachers_router.get('/delete_duplicate_teachers')
+# async def delete_duplicate_teachers(db=Depends(get_db)):
+#     return await crud.delete_duplicate_teachers(db)
 
 
 @teachers_router.get('/add_teacher')

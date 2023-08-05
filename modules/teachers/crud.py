@@ -2,7 +2,7 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy import func, alias
 
-from .models import Teacher
+from modules.teachers.models import Teacher
 
 
 async def get_teachers(db: Session):

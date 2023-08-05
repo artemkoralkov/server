@@ -71,36 +71,24 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
         'lesson_type': lesson_type.strip().replace(' ', '').replace('  ', '')
     }
 
+
 def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]]]':
     wb = load_workbook(filename)
     ws = wb.active
     schedule = {}
     course_numbers = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5}
     max_lessons = 6
-    if faculty == 'tbfb':
-        lessons_start_row = 5
-        lessons_end_row = 75
-        groups_names_start_row = '4'
-        course_number_row = '3'
-    elif faculty == 'dino':
-        lessons_start_row = 4
-        lessons_end_row = 64
-        groups_names_start_row = '3'
-        course_number_row = '2'
-    elif faculty == 'tbft':
-        lessons_start_row = 4
-        lessons_end_row = 72
-        groups_names_start_row = '3'
-        course_number_row = '2'
-    else:
-        lessons_start_row = 4
-        lessons_end_row = 74
-        groups_names_start_row = '3'
-        course_number_row = '2'
+    faculty_data = {
+        'tbfb': (5, 75, '4', '3'),
+        'dino': (4, 64, '3', '2'),
+        'tbft': (4, 72, '3', '2')
+    }
+
+    lessons_start_row, lessons_end_row, groups_names_start_row, course_number_row = faculty_data.get(faculty,
+                                                                                                     (4, 74, '3', '2'))
     column = 4
     while ws[get_column_letter(column) + groups_names_start_row].value:
-        # print(list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n'))))
-        group_number, speciality =\
+        group_number, speciality = \
             list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n')))
         course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + course_number_row])
         current_group = f'{course_numbers[course_number]}/{group_number} {speciality}'
@@ -301,7 +289,8 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
                         **lesson_to_dict(bottom_right_cell.value, faculty)
                     },
                 ])
-            elif is_merged_sell(upper_left_cell) and is_merged_sell(bottom_left_cell) and not is_merged_sell(upper_right_cell) and is_merged_sell(bottom_right_cell):
+            elif is_merged_sell(upper_left_cell) and is_merged_sell(bottom_left_cell) and not is_merged_sell(
+                    upper_right_cell) and is_merged_sell(bottom_right_cell):
                 schedule[current_group].append([
                     {
                         'first_group': True,
@@ -323,56 +312,3 @@ def excel_to_json(filename: str, faculty: str) -> 'dict[str, list[dict[str, str]
             schedule[current_group].append([{'lesson': None}])
         schedule[current_group] = split_list_by_parts(schedule[current_group], max_lessons)
     return schedule
-
-
-# lessons = excel_to_json("B:/Downloads/raspis_FIF__I_semestr_2022-2023.xlsx")
-# with open('schedule.json', 'r', encoding='utf-8') as file:
-#     schedule = json.load(file)
-
-
-# print(
-#     lesson_to_dict("Физическая культура\nпр. Федорович В.К., пр. Таргонский Н.Н., пр. Маслова Е.А.,\nСМГ Болбас Е.В.")
-# )
-# wb = load_workbook(filename)
-# ws = wb.active
-# lessons_start_row = 5 lessons_end_row = 75 groups_names_start_row = '4' course_number_row = '3' course_numbers = {
-# 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5} column = 4 while ws[get_column_letter(column) +
-# groups_names_start_row].value: print(column) print(get_column_letter(column) + groups_names_start_row) print(list(
-# map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split('\n')))) group_number,
-# speciality = list(map(lambda e: e.strip(), ws[get_column_letter(column) + groups_names_start_row].value.split(
-# '\n'))) course_number = get_merged_cell_value(ws, ws[get_column_letter(column) + course_number_row]) current_group
-# = f'{course_numbers[course_number]}/{group_number} {speciality}'
-        
-#         column += 3
-# upper_left_cell = ws['J40']
-# upper_right_cell = ws['K40']
-# bottom_left_cell = ws['J41']
-# bottom_right_cell = ws['K41']
-# print(is_merged_sell(ws['K41']) and not is_merged_sell(ws['J40']) and not is_merged_sell(ws['K40']))
-# if is_merged_sell(bottom_right_cell) and \
-#         not is_merged_sell(upper_left_cell) and \
-#         not is_merged_sell(upper_right_cell):
-#     print([
-#         {
-#             'numerator': True,
-#             'first_group': True,
-#             **lesson_to_dict(upper_left_cell.value)
-#         },
-#         {
-#             'numerator': True,
-#             'second_group': True,
-#             **lesson_to_dict(upper_right_cell.value)
-#         },
-#         {
-#             'denominator': True,
-#             **lesson_to_dict(bottom_left_cell.value)
-#         },
-#     ])
-# filename = "F:/work/Расписания и нагрузки/2022-2023/2_семестр_2023__.xlsx"
-# with open('schedule.json', 'w', encoding='utf-8') as file:
-#     json.dump(
-#         excel_to_json(filename, faculty='tbft'),
-#         file,
-#         ensure_ascii=False,
-#         indent=4
-#     )

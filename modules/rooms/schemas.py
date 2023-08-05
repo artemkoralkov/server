@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List
-from ..lessons.schemas import Lesson
+from modules.lessons.schemas import Lesson
+
 
 class RoomReservationBase(BaseModel):
     lesson_id: str
@@ -15,6 +16,7 @@ class RoomReservationCreate(RoomReservationBase):
 class RoomReservation(RoomReservationBase):
     id: str
     room_id: str
+
     # lessons: 'list[Lesson]' = []
     class Config:
         orm_mode = True
@@ -29,8 +31,6 @@ class RoomBase(BaseModel):
     max_people: int
 
 
-
-
 class RoomCreate(RoomBase):
     pass
 
@@ -38,7 +38,6 @@ class RoomCreate(RoomBase):
 class Room(RoomCreate):
     id: str
     rooms_reservations: List[RoomReservation] = []
+
     class Config:
         orm_mode = True
-
-

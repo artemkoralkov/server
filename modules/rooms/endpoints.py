@@ -2,7 +2,7 @@
 from fastapi import Depends, Request, APIRouter, status
 from sqlalchemy.orm import Session
 
-from .schemas import *
+from modules.rooms.schemas import *
 
 import modules.rooms.crud as crud
 from database import get_db

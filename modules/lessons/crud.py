@@ -3,9 +3,9 @@ from operator import itemgetter
 from uuid import uuid4
 from sqlalchemy.orm import Session
 
-from .models import Lesson
-from .schemas import LessonCreate
-from .utils.handle_combined_lessons import handle_combined_lessons
+from modules.lessons.models import Lesson
+from modules.lessons.schemas import LessonCreate
+from modules.lessons.utils.handle_combined_lessons import handle_combined_lessons
 
 
 async def upload_excel_schedule(db: Session, schedule, faculty):
@@ -114,6 +114,7 @@ async def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
 async def get_lessons(db: Session) -> 'list[Lesson]':
     return db.query(Lesson).all()
 
+
 async def get_lessons_by_faculty(faculty: str, db: Session):
     return db.query(Lesson).filter(Lesson.faculty == faculty).all()
 
@@ -153,19 +154,24 @@ async def delete_lessons_by_faculty(db: Session, faculty):
     db.commit()
 
 
-async def edit_lesson(db: Session, lesson_id, lesson: 'dict[str, str]'):
-    db.query(Lesson).filter(Lesson.id == lesson_id).update({
-        Lesson.lesson_title: lesson['lesson_title'],
-        Lesson.group_name: lesson['group_name'],
-        Lesson.teacher_name: lesson['teacher_name'],
-        Lesson.faculty: lesson['faculty'],
-        Lesson.lesson_type: lesson['lesson_type'],
-        Lesson.day: int(lesson['day']),
-        Lesson.lesson_number: lesson['lesson_number'],
-        Lesson.numerator: lesson['numerator'],
-        Lesson.denominator: lesson['denominator'],
-        Lesson.first_group: lesson['first_group'],
-        Lesson.second_group: lesson['second_group']
-    })
+async def edit_lesson(db: Session, lesson_id, updated_lesson: LessonCreate):
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    update_data = updated_lesson.dict()
+    db.query(Lesson).filter(Lesson.id == lesson_id).update(update_data, synchronize_session=False)
     db.commit()
-    return {'id': lesson_id, **lesson}
+    db.refresh(lesson)
+    # db.commit()
+    # db.query(Lesson).filter(Lesson.id == lesson_id).update({
+    #     Lesson.lesson_title: lesson['lesson_title'],
+    #     Lesson.group_name: lesson['group_name'],
+    #     Lesson.teacher_name: lesson['teacher_name'],
+    #     Lesson.faculty: lesson['faculty'],
+    #     Lesson.lesson_type: lesson['lesson_type'],
+    #     Lesson.day: int(lesson['day']),
+    #     Lesson.lesson_number: lesson['lesson_number'],
+    #     Lesson.numerator: lesson['numerator'],
+    #     Lesson.denominator: lesson['denominator'],
+    #     Lesson.first_group: lesson['first_group'],
+    #     Lesson.second_group: lesson['second_group']
+    # })
+    return lesson

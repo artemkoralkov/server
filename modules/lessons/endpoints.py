@@ -1,9 +1,9 @@
 import os
-from fastapi import Depends, UploadFile, File, Request, APIRouter, status
+from fastapi import Depends, UploadFile, File, Request, APIRouter, status, Header
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from .schemas import *
+from modules.lessons.schemas import *
 
 from modules.lessons.utils.excel_to_json import excel_to_json
 import modules.lessons.crud as crud
@@ -18,7 +18,7 @@ lessons_router = APIRouter(
 )
 
 
-@lessons_router.get('/', status_code=status.HTTP_200_OK)
+@lessons_router.get('', status_code=status.HTTP_200_OK)
 async def get_lessons(faculty='', group_name='', teacher_name='', db: Session = Depends(get_db)):
     if faculty:
         result = await crud.get_lessons_by_faculty(FACULTIES[faculty], db)
@@ -60,20 +60,19 @@ async def upload_excel_schedule(faculty, file: UploadFile = File(...), db: Sessi
     return await crud.upload_excel_schedule(db, schedule, FACULTIES[faculty])
 
 
-@lessons_router.post('/', status_code=status.HTTP_201_CREATED)
-async def add_lesson(json_lesson: Request, db=Depends(get_db)):
-    lesson: LessonCreate = await json_lesson.json()
+@lessons_router.post('', status_code=status.HTTP_201_CREATED)
+async def add_lesson(lesson: LessonCreate, username: str = Header(), db=Depends(get_db)):
     return await crud.add_lesson(db, lesson)
 
 
 @lessons_router.put('/{lesson_id}', status_code=status.HTTP_200_OK)
-async def edit_lesson(lesson_id, incoming_lesson: Request, db=Depends(get_db)):
-    lesson: dict[str, str] = await incoming_lesson.json()
-    return await crud.edit_lesson(db, lesson_id, lesson)
+async def edit_lesson(lesson_id, edited_lesson: LessonCreate, username: str = Header(), db=Depends(get_db)):
+    # lesson: dict[str, str] = await incoming_lesson.json()
+    return await crud.edit_lesson(db, lesson_id, edited_lesson)
 
 
 @lessons_router.delete('/{lesson_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete_lesson(lesson_id, db=Depends(get_db)):
+async def delete_lesson(lesson_id, username: str = Header(), db=Depends(get_db)):
     return await crud.delete_lesson(db, lesson_id)
 
 
