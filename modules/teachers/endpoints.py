@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import Depends, Request, Form, HTTPException, APIRouter, status
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -7,7 +9,9 @@ from constants import FACULTIES
 from database import get_db
 from modules.teachers.schemas import TeacherCreate
 
-templates = Jinja2Templates(directory="./templates")
+BASE_DIR = Path(__file__).resolve().parent
+
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 teachers_router = APIRouter(prefix="/teachers", tags=["teachers"])
 

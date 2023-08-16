@@ -1,6 +1,7 @@
 import os
+from pathlib import Path
 
-from fastapi import Depends, UploadFile, File, Request, APIRouter, status, Header
+from fastapi import Depends, UploadFile, File, Request, APIRouter, status, Header, Form
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
@@ -10,7 +11,9 @@ from database import get_db
 from modules.lessons.schemas import LessonCreate
 from modules.lessons.utils.excel_to_json import excel_to_json
 
-templates = Jinja2Templates(directory="./templates")
+BASE_DIR = Path(__file__).resolve().parent
+
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 lessons_router = APIRouter(prefix="/lessons", tags=["lessons"])
 
@@ -31,14 +34,13 @@ async def get_lessons(
 
 
 @lessons_router.get("/upload_excel_schedule", status_code=status.HTTP_200_OK)
-async def upload_excel_schedule_form(request: Request, faculty):
+async def upload_excel_schedule_form(request: Request):
     """Generate HTML form for upload .xlsx file with schedule to server"""
     return templates.TemplateResponse(
         "upload_excel_form.html",
         {
             "request": request,
-            "faculties": FACULTIES,
-            "faculty": faculty,
+            "faculties": list(FACULTIES.values()),
         },
     )
 
@@ -52,7 +54,9 @@ async def get_groups(faculty="", db: Session = Depends(get_db)):
 
 @lessons_router.post("/upload_excel_schedule", status_code=status.HTTP_201_CREATED)
 async def upload_excel_schedule(
-    faculty, file: UploadFile = File(...), db: Session = Depends(get_db)
+    faculty: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
     with open(f"{file.filename}", "wb+") as file_object:
         file_object.write(file.file.read())

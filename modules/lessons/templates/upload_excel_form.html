@@ -1,7 +1,12 @@
 <body>
-    <p> {{faculties[faculty]}} </p>
     <form action="/lessons/upload_excel_schedule/?faculty={{faculty}}" enctype="multipart/form-data" method="post">
-    <input name="file" type="file">
-    <input type="submit">
+        {% for faculty in faculties %}
+            <p>
+                <input type="radio" id="{{faculty}}" name="faculty" value="{{faculty}}">
+                <label for="{{ faculty }}">{{faculty}}</label>
+            </p>
+        {% endfor %}
+        <input name="file" type="file">
+        <input type="submit">
     </form>
 </body>
