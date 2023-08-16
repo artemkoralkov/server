@@ -1,18 +1,25 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 
-from modules.lessons.endpoints import lessons_router
-from modules.teachers.endpoints import teachers_router
-from modules.rooms.endpoints import rooms_router
-from modules.users.endpoints import users_router
 from database import Base, engine
+from modules.lessons.endpoints import lessons_router
+from modules.rooms.endpoints import rooms_router
+from modules.teachers.endpoints import teachers_router
+from modules.users.endpoints import users_router
+from modules.logs.endpoints import logs_router
 
-templates = Jinja2Templates(directory='./templates')
+templates = Jinja2Templates(directory="./templates")
 app = FastAPI()
 
-origins: 'list[str]' = ['http://localhost:3000',
-                        'https://mspu-schedule.netlify.app', 'https://web.postman.co', 'http://localhost:5173']
+origins: "list[str]" = [
+    "http://localhost:3000",
+    "http://192.168.0.103:3000",
+    "http://192.168.0.103:3000/",
+    "https://mspu-schedule.netlify.app",
+    "https://web.postman.co",
+    "http://localhost:5173",
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -25,3 +32,4 @@ app.include_router(lessons_router)
 app.include_router(teachers_router)
 app.include_router(rooms_router)
 app.include_router(users_router)
+app.include_router(logs_router)

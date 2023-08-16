@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from modules.users.models import User
 from modules.users.schemas import UserCreate
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def get_users(db: Session):
@@ -21,17 +21,19 @@ def get_password_hash(password):
 
 
 async def create_user(user: UserCreate, db: Session):
-    db.add(User(
-        id=str(uuid4()),
-        username=user.username,
-        hashed_password=get_password_hash(user.plain_password)
-    ))
+    db.add(
+        User(
+            id=str(uuid4()),
+            username=user.username,
+            hashed_password=get_password_hash(user.plain_password),
+        )
+    )
     db.commit()
     return user
 
+
 async def login(password: str, db: Session):
     users = db.query(User).all()
-
     for user in users:
         if verify_password(password, user.hashed_password):
             return user.username

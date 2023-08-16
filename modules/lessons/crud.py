@@ -1,11 +1,15 @@
+import datetime
 from itertools import groupby
 from operator import itemgetter
+from typing import Type
 from uuid import uuid4
+
 from sqlalchemy.orm import Session
 
 from modules.lessons.models import Lesson
-from modules.lessons.schemas import LessonCreate
+from modules.lessons.schemas import LessonCreate, Lesson as PydanticLesson
 from modules.lessons.utils.handle_combined_lessons import handle_combined_lessons
+from modules.logs.models import Log
 
 
 async def upload_excel_schedule(db: Session, schedule, faculty):
@@ -19,7 +23,7 @@ async def upload_excel_schedule(db: Session, schedule, faculty):
                 lesson_number += 1
                 if isinstance(lesson, list):
                     for i in lesson:
-                        if 'lesson' in i:
+                        if "lesson" in i:
                             continue
                         tmp_lesson = Lesson(
                             id=str(uuid4()),
@@ -27,13 +31,13 @@ async def upload_excel_schedule(db: Session, schedule, faculty):
                             lesson_number=lesson_number,
                             group_name=group,
                             faculty=faculty,
-                            **i
+                            **i,
                         )
                         db.add(tmp_lesson)
                         db.commit()
                         db.refresh(tmp_lesson)
                 else:
-                    if 'lesson' in lesson:
+                    if "lesson" in lesson:
                         continue
                     tmp_lesson = Lesson(
                         id=str(uuid4()),
@@ -41,7 +45,7 @@ async def upload_excel_schedule(db: Session, schedule, faculty):
                         lesson_number=lesson_number,
                         group_name=group,
                         faculty=faculty,
-                        **lesson
+                        **lesson,
                     )
                     db.add(tmp_lesson)
                     db.commit()
@@ -56,62 +60,86 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
         if c.isupper():
             last_name = teacher_name.find(c)
             break
-    teachers_lessons = db.query(Lesson) \
-        .filter(Lesson.teacher_name.like(f'%{teacher_name[last_name:]}')) \
-        .order_by(Lesson.day, Lesson.lesson_number).all()
+    teachers_lessons = (
+        db.query(Lesson)
+        .filter(Lesson.teacher_name.like(f"%{teacher_name[last_name:]}"))
+        .order_by(Lesson.day, Lesson.lesson_number)
+        .all()
+    )
     teachers_lessons = {
-        'Monday': [i for i in teachers_lessons if i.day == 1],
-        'Tuesday': [i for i in teachers_lessons if i.day == 2],
-        'Wednesday': [i for i in teachers_lessons if i.day == 3],
-        'Thursday': [i for i in teachers_lessons if i.day == 4],
-        'Friday': [i for i in teachers_lessons if i.day == 5],
-        'Saturday': [i for i in teachers_lessons if i.day == 6],
+        "Monday": [i for i in teachers_lessons if i.day == 1],
+        "Tuesday": [i for i in teachers_lessons if i.day == 2],
+        "Wednesday": [i for i in teachers_lessons if i.day == 3],
+        "Thursday": [i for i in teachers_lessons if i.day == 4],
+        "Friday": [i for i in teachers_lessons if i.day == 5],
+        "Saturday": [i for i in teachers_lessons if i.day == 6],
     }
 
     tmp_teachers_lessons: dict[str, list[list[Lesson | None]]] = {
-        'Monday': [[], [], [], [], [], []],
-        'Tuesday': [[], [], [], [], [], []],
-        'Wednesday': [[], [], [], [], [], []],
-        'Thursday': [[], [], [], [], [], []],
-        'Friday': [[], [], [], [], [], []],
-        'Saturday': [[], [], [], [], [], []],
+        "Monday": [[], [], [], [], [], []],
+        "Tuesday": [[], [], [], [], [], []],
+        "Wednesday": [[], [], [], [], [], []],
+        "Thursday": [[], [], [], [], [], []],
+        "Friday": [[], [], [], [], [], []],
+        "Saturday": [[], [], [], [], [], []],
     }
     for i in teachers_lessons:
-        for key, group in groupby(teachers_lessons[i], key=lambda item: vars(item)['lesson_number']):
+        for key, group in groupby(
+            teachers_lessons[i], key=lambda item: vars(item)["lesson_number"]
+        ):
             tmp_teachers_lessons[i][int(key)].extend(list(group))
 
     for days in tmp_teachers_lessons:
         for lessons_index in range(len(tmp_teachers_lessons[days])):
             lessons = tmp_teachers_lessons[days][lessons_index]
             if len(lessons) >= 2:
-                tmp_teachers_lessons[days][lessons_index] = handle_combined_lessons(lessons)
+                tmp_teachers_lessons[days][lessons_index] = handle_combined_lessons(
+                    lessons
+                )
     return tmp_teachers_lessons
 
 
 async def get_groups(db: Session, faculty=None):
     if faculty:
-        lessons = db.query(Lesson).filter(Lesson.faculty == faculty) \
-            .order_by(Lesson.group_name).all()
+        lessons = (
+            db.query(Lesson)
+            .filter(Lesson.faculty == faculty)
+            .order_by(Lesson.group_name)
+            .all()
+        )
     else:
-        lessons = db.query(Lesson) \
-            .order_by(Lesson.group_name).all()
-    groups = [{'group_name': ' '.join(lesson.group_name.split()), 'faculty': lesson.faculty} for lesson in lessons]
+        lessons = db.query(Lesson).order_by(Lesson.group_name).all()
+    groups = [
+        {"group_name": " ".join(lesson.group_name.split()), "faculty": lesson.faculty}
+        for lesson in lessons
+    ]
     groups = [dict(t) for t in {tuple(d.items()) for d in groups}]
-    groups.sort(key=itemgetter('group_name'))
+    groups.sort(key=itemgetter("group_name"))
     # groups: list[str] = list(map(lambda g: ' '.join(
     #     [i for i in g.split(' ') if i != '']), groups))
     return groups
 
 
-async def add_lesson(db: Session, lesson: LessonCreate) -> Lesson:
-    tmp_lesson: Lesson = Lesson(**{'id': str(uuid4()), **lesson.dict()})
+async def add_lesson(db: Session, lesson: LessonCreate, username: str) -> Lesson:
+    tmp_lesson: Lesson = Lesson(**{"id": str(uuid4()), **lesson.model_dump()})
+    log: Log = Log(
+        **{
+            "id": str(uuid4()),
+            **lesson.model_dump(),
+            "username": username,
+            "action": "create",
+            "date": datetime.datetime.now(),
+        }
+    )
+    db.add(log)
     db.add(tmp_lesson)
     db.commit()
     db.refresh(tmp_lesson)
+    db.refresh(log)
     return tmp_lesson
 
 
-async def get_lessons(db: Session) -> 'list[Lesson]':
+async def get_lessons(db: Session) -> list[Type[Lesson]]:
     return db.query(Lesson).all()
 
 
@@ -120,33 +148,53 @@ async def get_lessons_by_faculty(faculty: str, db: Session):
 
 
 async def get_lessons_by_group(group_name: str, db: Session):
-    group_lessons: list[Lesson] = db.query(Lesson).filter(
-        Lesson.group_name == group_name).order_by(Lesson.first_group.desc()).all()
-    group_lessons_by_days: dict[str, list[Lesson]] = {
-        'Monday': [i for i in group_lessons if i.day == 1],
-        'Tuesday': [i for i in group_lessons if i.day == 2],
-        'Wednesday': [i for i in group_lessons if i.day == 3],
-        'Thursday': [i for i in group_lessons if i.day == 4],
-        'Friday': [i for i in group_lessons if i.day == 5],
-        'Saturday': [i for i in group_lessons if i.day == 6],
+    group_lessons: list[Type[Lesson]] = (
+        db.query(Lesson)
+        .filter(Lesson.group_name == group_name)
+        .order_by(Lesson.first_group.desc())
+        .all()
+    )
+    group_lessons_by_days: dict[str, list[Type[Lesson]]] = {
+        "Monday": [i for i in group_lessons if i.day == 1],
+        "Tuesday": [i for i in group_lessons if i.day == 2],
+        "Wednesday": [i for i in group_lessons if i.day == 3],
+        "Thursday": [i for i in group_lessons if i.day == 4],
+        "Friday": [i for i in group_lessons if i.day == 5],
+        "Saturday": [i for i in group_lessons if i.day == 6],
     }
     tmp_group_lessons = {
-        'Monday': [[], [], [], [], [], []],
-        'Tuesday': [[], [], [], [], [], []],
-        'Wednesday': [[], [], [], [], [], []],
-        'Thursday': [[], [], [], [], [], []],
-        'Friday': [[], [], [], [], [], []],
-        'Saturday': [[], [], [], [], [], []],
+        "Monday": [[], [], [], [], [], []],
+        "Tuesday": [[], [], [], [], [], []],
+        "Wednesday": [[], [], [], [], [], []],
+        "Thursday": [[], [], [], [], [], []],
+        "Friday": [[], [], [], [], [], []],
+        "Saturday": [[], [], [], [], [], []],
     }
     for i in group_lessons_by_days:
-        for key, group in groupby(group_lessons_by_days[i], key=lambda item: vars(item)['lesson_number']):
+        for key, group in groupby(
+            group_lessons_by_days[i], key=lambda item: vars(item)["lesson_number"]
+        ):
             tmp_group_lessons[i][int(key)].extend(list(group))
     return tmp_group_lessons
 
 
-async def delete_lesson(db: Session, lesson_id):
-    db.query(Lesson).filter(Lesson.id == lesson_id).delete()
+async def delete_lesson(db: Session, lesson_id: str, username: str):
+    lesson = db.get(Lesson, lesson_id)
+    lesson_data = PydanticLesson.model_validate(lesson).model_dump()
+    lesson_data.pop("id")
+    log: Log = Log(
+        **{
+            "id": str(uuid4()),
+            **lesson_data,
+            "username": username,
+            "action": "delete",
+            "date": datetime.datetime.now(),
+        }
+    )
+    db.add(log)
+    db.delete(lesson)
     db.commit()
+    db.refresh(log)
 
 
 async def delete_lessons_by_faculty(db: Session, faculty):
@@ -154,12 +202,25 @@ async def delete_lessons_by_faculty(db: Session, faculty):
     db.commit()
 
 
-async def edit_lesson(db: Session, lesson_id, updated_lesson: LessonCreate):
+async def edit_lesson(
+    db: Session, lesson_id, updated_lesson: LessonCreate, username: str
+):
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
-    update_data = updated_lesson.dict()
-    db.query(Lesson).filter(Lesson.id == lesson_id).update(update_data, synchronize_session=False)
+    update_data = updated_lesson.model_dump()
+    log: Log = Log(
+        **{
+            "id": str(uuid4()),
+            **updated_lesson.model_dump(),
+            "username": username,
+            "action": "edit",
+        }
+    )
+    db.query(Lesson).filter(Lesson.id == lesson_id).update(
+        update_data, synchronize_session=False
+    )
     db.commit()
     db.refresh(lesson)
+    db.refresh(log)
     # db.commit()
     # db.query(Lesson).filter(Lesson.id == lesson_id).update({
     #     Lesson.lesson_title: lesson['lesson_title'],

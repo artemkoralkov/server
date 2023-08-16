@@ -1,6 +1,6 @@
-from pydantic import BaseModel
 from typing import List
-from modules.lessons.schemas import Lesson
+
+from pydantic import BaseModel
 
 
 class RoomReservationBase(BaseModel):
@@ -40,4 +40,4 @@ class Room(RoomCreate):
     rooms_reservations: List[RoomReservation] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
