@@ -19,7 +19,7 @@ class RoomReservation(RoomReservationBase):
 
     # lessons: 'list[Lesson]' = []
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoomBase(BaseModel):
