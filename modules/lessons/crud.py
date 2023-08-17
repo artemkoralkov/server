@@ -1,7 +1,6 @@
 import datetime
 from itertools import groupby
 from operator import itemgetter
-from typing import Type
 from uuid import uuid4
 
 from sqlalchemy.orm import Session
@@ -139,7 +138,7 @@ async def add_lesson(db: Session, lesson: LessonCreate, username: str) -> Lesson
     return tmp_lesson
 
 
-async def get_lessons(db: Session) -> list[Type[Lesson]]:
+async def get_lessons(db: Session) -> list[Lesson]:
     return db.query(Lesson).all()
 
 
@@ -148,13 +147,13 @@ async def get_lessons_by_faculty(faculty: str, db: Session):
 
 
 async def get_lessons_by_group(group_name: str, db: Session):
-    group_lessons: list[Type[Lesson]] = (
+    group_lessons: list[Lesson] = (
         db.query(Lesson)
         .filter(Lesson.group_name == group_name)
         .order_by(Lesson.first_group.desc())
         .all()
     )
-    group_lessons_by_days: dict[str, list[Type[Lesson]]] = {
+    group_lessons_by_days: dict[str, list[Lesson]] = {
         "Monday": [i for i in group_lessons if i.day == 1],
         "Tuesday": [i for i in group_lessons if i.day == 2],
         "Wednesday": [i for i in group_lessons if i.day == 3],

@@ -1,4 +1,3 @@
-from typing import Type
 from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy import func, alias
@@ -7,7 +6,7 @@ from modules.teachers.models import Teacher
 
 
 async def get_teachers(db: Session):
-    teachers: list[Type[Teacher]] = db.query(Teacher).all()
+    teachers: list[Teacher] = db.query(Teacher).all()
     return teachers
 
 
@@ -16,7 +15,7 @@ async def get_teacher_by_name(db: Session, teacher_name: str):
 
 
 async def get_teachers_by_faculty(db: Session, faculty: str):
-    teachers_by_faculty: list[Type[Teacher]] = (
+    teachers_by_faculty: list[Teacher] = (
         db.query(Teacher).filter(Teacher.faculty == faculty).all()
     )
     return teachers_by_faculty
