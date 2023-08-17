@@ -1,4 +1,4 @@
-FACULTIES: dict[str, str] = {
+FACULTIES = {
     "dino": "ДиНО",
     "fif": "ФИФ",
     "ffk": "ФФК",
