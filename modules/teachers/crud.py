@@ -7,7 +7,7 @@ from modules.teachers.models import Teacher
 
 
 async def get_teachers(db: Session):
-    teachers: list[Teacher] = db.query(Teacher).all()
+    teachers: "list[Teacher]" = db.query(Teacher).all()
     return teachers
 
 

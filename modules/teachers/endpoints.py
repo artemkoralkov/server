@@ -54,7 +54,7 @@ async def add_teacher(
 
 
 @teachers_router.post("/add_teachers", status_code=status.HTTP_201_CREATED)
-async def add_teachers(teachers: list[TeacherCreate], db: Session = Depends(get_db)):
+async def add_teachers(teachers: "list[TeacherCreate]", db: Session = Depends(get_db)):
     return await crud.add_teachers(db, teachers)
 
 
