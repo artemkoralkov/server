@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
 
@@ -8,7 +10,7 @@ from modules.rooms.schemas import RoomCreate, Room, RoomReservationCreate
 rooms_router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 
-@rooms_router.get("", response_model=list[Room])
+@rooms_router.get("", response_model=List[Room])
 async def get_rooms(db: Session = Depends(get_db)):
     return await crud.get_rooms(db)
 
