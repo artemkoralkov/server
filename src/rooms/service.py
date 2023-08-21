@@ -2,8 +2,8 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from modules.rooms.models import Room, RoomReservation
-from modules.rooms.schemas import RoomCreate, RoomReservationCreate
+from src.rooms.models import Room, RoomReservation
+from src.rooms.schemas import RoomCreate, RoomReservationCreate
 
 
 async def get_rooms(db: Session):

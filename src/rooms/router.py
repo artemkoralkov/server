@@ -3,9 +3,9 @@ from typing import List
 from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
 
-import modules.rooms.crud as crud
-from database import get_db
-from modules.rooms.schemas import RoomCreate, Room, RoomReservationCreate
+import src.rooms.service as crud
+from src.database import get_db
+from src.rooms.schemas import RoomCreate, Room, RoomReservationCreate
 
 rooms_router = APIRouter(prefix="/rooms", tags=["rooms"])
 

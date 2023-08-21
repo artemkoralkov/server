@@ -1,16 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
-
-from database import Base, engine
-from modules.lessons.endpoints import lessons_router
-from modules.rooms.endpoints import rooms_router
-from modules.teachers.endpoints import teachers_router
-from modules.users.endpoints import users_router
-from modules.logs.endpoints import logs_router
+from src.database import Base, engine
+from src.lessons.router import lessons_router
+from src.rooms.router import rooms_router
+from src.teachers.router import teachers_router
+from src.users.router import users_router
+from src.logs.router import logs_router
 
 templates = Jinja2Templates(directory="./templates")
 app = FastAPI()
+
 
 origins: "list[str]" = [
     "http://localhost:3000",

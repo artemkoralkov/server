@@ -1,8 +1,8 @@
 from fastapi import Depends, APIRouter, status
 from sqlalchemy.orm import Session
 
-from database import get_db
-from modules.logs.models import Log
+from src.database import get_db
+from src.logs.models import Log
 
 logs_router = APIRouter(prefix="/logs", tags=["logs"])
 

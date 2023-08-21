@@ -4,10 +4,10 @@ from fastapi import Depends, Request, Form, HTTPException, APIRouter, status
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-import modules.teachers.crud as crud
-from constants import FACULTIES
-from database import get_db
-from modules.teachers.schemas import TeacherCreate
+import src.teachers.service as crud
+from src.constants import FACULTIES
+from src.database import get_db
+from src.teachers.schemas import TeacherCreate
 
 BASE_DIR = Path(__file__).resolve().parent
 

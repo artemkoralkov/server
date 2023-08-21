@@ -3,7 +3,7 @@
         {% for faculty in faculties %}
             <p>
                 <input type="radio" id="{{faculty}}" name="faculty" value="{{faculty}}">
-                <label for="{{ faculty }}">{{faculty}}</label>
+                <label for="{{ faculty }}">{{faculties[faculty]}}</label>
             </p>
         {% endfor %}
         <input name="file" type="file">

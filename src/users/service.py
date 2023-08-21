@@ -2,8 +2,8 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
-from modules.users.models import User
-from modules.users.schemas import UserCreate
+from src.users.models import User
+from src.users.schemas import UserCreate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

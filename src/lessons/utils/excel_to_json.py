@@ -4,7 +4,7 @@ from openpyxl.utils import get_column_letter
 
 def split_list_by_parts(lst: list, parts: int) -> list:
     k, m = divmod(len(lst), parts)
-    return [lst[i * k + min(i, m): (i + 1) * k + min(i + 1, m)] for i in range(parts)]
+    return [lst[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(parts)]
 
 
 def get_merged_cell_value(sheet, cell) -> str:
@@ -86,20 +86,20 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
             left_bracket_index = lesson_teacher.rfind("(")
             right_bracket_index = lesson_teacher.rfind(")")
             if (
-                    lesson_teacher[left_bracket_index + 1: right_bracket_index]
-                    in lesson_types
+                lesson_teacher[left_bracket_index + 1 : right_bracket_index]
+                in lesson_types
             ):
                 lesson_type = lesson_teacher[
-                              left_bracket_index + 1: right_bracket_index
-                              ]
+                    left_bracket_index + 1 : right_bracket_index
+                ]
         else:
             left_bracket_index = lesson_name.rfind("(")
             right_bracket_index = lesson_name.rfind(")")
             if (
-                    lesson_name[left_bracket_index + 1: right_bracket_index]
-                    in lesson_types
+                lesson_name[left_bracket_index + 1 : right_bracket_index]
+                in lesson_types
             ):
-                lesson_type = lesson_name[left_bracket_index + 1: right_bracket_index]
+                lesson_type = lesson_name[left_bracket_index + 1 : right_bracket_index]
     return {
         "lesson_title": " ".join(
             lesson_name.replace(f"({lesson_type})", "").strip().split()
@@ -111,7 +111,8 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
     }
 
 
-def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]]]":
+def excel_to_json(filename: str, faculty: str) -> dict[str, [[dict[str, str]]]]:
+    print(filename)
     wb = load_workbook(filename)
     ws = wb.active
     schedule = {}
@@ -150,13 +151,13 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
             bottom_left_cell = ws[get_column_letter(column) + str(row + 1)]
             bottom_right_cell = ws[get_column_letter(column + 1) + str(row + 1)]
             if (
-                    is_merged_sell(upper_right_cell)
-                    and is_merged_sell(bottom_left_cell)
-                    and is_merged_sell(bottom_right_cell)
+                is_merged_sell(upper_right_cell)
+                and is_merged_sell(bottom_left_cell)
+                and is_merged_sell(bottom_right_cell)
             ):
                 if is_merged_sell(upper_left_cell):
                     if get_merged_cell_value(
-                            ws, upper_left_cell
+                        ws, upper_left_cell
                     ) != get_merged_cell_value(ws, bottom_left_cell):
                         schedule[current_group].append(
                             [
@@ -185,7 +186,7 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                             )
                         )
                 elif get_merged_cell_value(
-                        ws, upper_left_cell
+                    ws, upper_left_cell
                 ) != get_merged_cell_value(ws, bottom_left_cell):
                     schedule[current_group].append(
                         [
@@ -208,9 +209,9 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                         )
                     )
             elif (
-                    not is_merged_sell(upper_right_cell)
-                    and not is_merged_sell(bottom_left_cell)
-                    and not is_merged_sell(bottom_right_cell)
+                not is_merged_sell(upper_right_cell)
+                and not is_merged_sell(bottom_left_cell)
+                and not is_merged_sell(bottom_right_cell)
             ):
                 schedule[current_group].append(
                     [
@@ -237,10 +238,10 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                     ]
                 )
             elif not is_merged_sell(upper_left_cell) and is_merged_sell(
-                    bottom_right_cell
+                bottom_right_cell
             ):
                 if not is_merged_sell(upper_right_cell) and is_merged_sell(
-                        bottom_left_cell
+                    bottom_left_cell
                 ):
                     schedule[current_group].append(
                         [
@@ -255,10 +256,10 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                         ]
                     )
                 elif (
-                        not is_merged_sell(upper_right_cell)
-                        and not is_merged_sell(bottom_left_cell)
-                        and get_merged_cell_value(ws, bottom_right_cell)
-                        == upper_right_cell.value
+                    not is_merged_sell(upper_right_cell)
+                    and not is_merged_sell(bottom_left_cell)
+                    and get_merged_cell_value(ws, bottom_right_cell)
+                    == upper_right_cell.value
                 ):
                     schedule[current_group].append(
                         [
@@ -279,7 +280,7 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                         ]
                     )
                 elif is_merged_sell(upper_right_cell) and not is_merged_sell(
-                        bottom_left_cell
+                    bottom_left_cell
                 ):
                     schedule[current_group].append(
                         [
@@ -313,9 +314,9 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                         ]
                     )
             elif (
-                    is_merged_sell(upper_right_cell)
-                    and not is_merged_sell(bottom_left_cell)
-                    and not is_merged_sell(bottom_right_cell)
+                is_merged_sell(upper_right_cell)
+                and not is_merged_sell(bottom_left_cell)
+                and not is_merged_sell(bottom_right_cell)
             ):
                 schedule[current_group].append(
                     [
@@ -336,9 +337,9 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                     ]
                 )
             elif (
-                    is_merged_sell(bottom_right_cell)
-                    and not is_merged_sell(upper_left_cell)
-                    and not is_merged_sell(upper_right_cell)
+                is_merged_sell(bottom_right_cell)
+                and not is_merged_sell(upper_left_cell)
+                and not is_merged_sell(upper_right_cell)
             ):
                 schedule[current_group].append(
                     [
@@ -359,9 +360,9 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                     ]
                 )
             elif (
-                    is_merged_sell(upper_left_cell)
-                    and is_merged_sell(bottom_right_cell)
-                    and not is_merged_sell(bottom_left_cell)
+                is_merged_sell(upper_left_cell)
+                and is_merged_sell(bottom_right_cell)
+                and not is_merged_sell(bottom_left_cell)
             ):
                 schedule[current_group].append(
                     [
@@ -378,9 +379,9 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                     ]
                 )
             elif (
-                    is_merged_sell(bottom_left_cell)
-                    and not is_merged_sell(upper_right_cell)
-                    and not is_merged_sell(bottom_right_cell)
+                is_merged_sell(bottom_left_cell)
+                and not is_merged_sell(upper_right_cell)
+                and not is_merged_sell(bottom_right_cell)
             ):
                 schedule[current_group].append(
                     [
@@ -401,10 +402,10 @@ def excel_to_json(filename: str, faculty: str) -> "dict[str, list[dict[str, str]
                     ]
                 )
             elif (
-                    is_merged_sell(upper_left_cell)
-                    and is_merged_sell(bottom_left_cell)
-                    and not is_merged_sell(upper_right_cell)
-                    and is_merged_sell(bottom_right_cell)
+                is_merged_sell(upper_left_cell)
+                and is_merged_sell(bottom_left_cell)
+                and not is_merged_sell(upper_right_cell)
+                and is_merged_sell(bottom_right_cell)
             ):
                 schedule[current_group].append(
                     [

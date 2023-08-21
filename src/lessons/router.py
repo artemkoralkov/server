@@ -1,15 +1,13 @@
-import os
 from pathlib import Path
 
 from fastapi import Depends, UploadFile, File, Request, APIRouter, status, Header, Form
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-import modules.lessons.crud as crud
-from constants import FACULTIES
-from database import get_db
-from modules.lessons.schemas import LessonCreate
-from modules.lessons.utils.excel_to_json import excel_to_json
+import src.lessons.service as crud
+from src.constants import FACULTIES
+from src.database import get_db
+from src.lessons.schemas import LessonCreate
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -40,7 +38,7 @@ async def upload_excel_schedule_form(request: Request):
         "upload_excel_form.html",
         {
             "request": request,
-            "faculties": list(FACULTIES.values()),
+            "faculties": FACULTIES,
         },
     )
 
@@ -58,11 +56,7 @@ async def upload_excel_schedule(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    with open(f"{file.filename}", "wb+") as file_object:
-        file_object.write(file.file.read())
-    schedule = excel_to_json(f"{file.filename}", faculty)
-    os.remove(f"{file.filename}")
-    return await crud.upload_excel_schedule(db, schedule, FACULTIES[faculty])
+    return await crud.upload_excel_schedule(db, file, FACULTIES[faculty])
 
 
 @lessons_router.post("", status_code=status.HTTP_201_CREATED)

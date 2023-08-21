@@ -1,14 +1,12 @@
-from typing import List
 from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy import func, alias
 
-from modules.teachers.models import Teacher
+from src.teachers.models import Teacher
 
 
 async def get_teachers(db: Session):
-    teachers: "list[Teacher]" = db.query(Teacher).all()
-    return teachers
+    return db.query(Teacher).all()
 
 
 async def get_teacher_by_name(db: Session, teacher_name: str):
@@ -16,14 +14,11 @@ async def get_teacher_by_name(db: Session, teacher_name: str):
 
 
 async def get_teachers_by_faculty(db: Session, faculty: str):
-    teachers_by_faculty: List[Teacher] = (
-        db.query(Teacher).filter(Teacher.faculty == faculty).all()
-    )
-    return teachers_by_faculty
+    return db.query(Teacher).filter(Teacher.faculty == faculty).all()
 
 
 async def add_teachers(db: Session, teachers):
-    new_teachers: List[Teacher] = []
+    new_teachers = []
     for teacher in teachers:
         tmp_teacher: Teacher = Teacher(id=str(uuid4()), **teacher.dict())
         new_teachers.append(tmp_teacher)
