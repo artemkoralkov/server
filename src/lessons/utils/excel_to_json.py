@@ -38,6 +38,11 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
                 "lesson_title": "Физическая культура",
                 "teacher_name": f"{teachers[group_number - 2]}, {smg_teacher}",
             }
+        if len(teachers) == 2 and group_number == 3:
+            return {
+                "lesson_title": "Физическая культура",
+                "teacher_name": f"{teachers[1]}, {smg_teacher}",
+            }
         return {
             "lesson_title": "Физическая культура",
             "teacher_name": f"{teachers[group_number - 1]}, {smg_teacher}",
