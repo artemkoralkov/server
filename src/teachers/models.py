@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import Base
 
@@ -6,6 +6,6 @@ from src.database import Base
 class Teacher(Base):
     __tablename__ = "teachers"
     __table_args__ = {"extend_existing": True}
-    id: Column = Column(String, primary_key=True, index=True)
-    teacher_name: Column = Column(String, index=True, unique=True)
-    faculty: Column = Column(String, index=True)
+    id: Mapped[str] = mapped_column(primary_key=True)
+    teacher_name: Mapped[str] = mapped_column(unique=True)
+    faculty: Mapped[str]

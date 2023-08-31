@@ -1,25 +1,26 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+
 from src.database import Base
 
 
 class Room(Base):
     __tablename__ = "rooms"
-    id: Column = Column(String, primary_key=True, index=True)
-    number: Column = Column(Integer, index=True)
-    building_number: Column = Column(Integer, default=1)
-    floor = Column(Integer)
-    with_computers = Column(Boolean, default=False)
-    with_projector = Column(Boolean, default=False)
-    max_people = Column(Integer)
+    id: Mapped[str] = mapped_column(primary_key=True)
+    number: Mapped[int]
+    building_number: Mapped[int] = mapped_column(default=1)
+    floor: Mapped[int]
+    with_computers: Mapped[bool] = mapped_column(default=False)
+    with_projector: Mapped[bool] = mapped_column(default=False)
+    max_people: Mapped[int]
     rooms_reservations = relationship("RoomReservation", back_populates="room")
 
 
 class RoomReservation(Base):
     __tablename__ = "rooms_reservation"
-    id: Column = Column(String, primary_key=True, index=True)
-    room_id = Column(String, ForeignKey("rooms.id"))
-    lesson_id = Column(String, ForeignKey("lessons.id"))
-    day = Column(Integer)
-    lesson_number = Column(Integer)
+    id: Mapped[str] = mapped_column(primary_key=True)
+    room_id: Mapped[str] = mapped_column(ForeignKey("rooms.id"))
+    lesson_id: Mapped[str] = mapped_column(ForeignKey("lessons.id"))
+    day: Mapped[int]
+    lesson_number: Mapped[int]
     room = relationship("Room", back_populates="rooms_reservations")

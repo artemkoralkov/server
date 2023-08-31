@@ -1,22 +1,28 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime
+from datetime import datetime
+
+from sqlalchemy import DateTime
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
+
 from src.database import Base
 
 
 class Log(Base):
     __tablename__ = "logs"
-    id: Column = Column(String, primary_key=True, index=True)
-    username: Column = Column(String)
-    action: Column = Column(String)
-    date: Column = Column(DateTime(timezone=True), server_default=func.now())
-    lesson_title: Column = Column(String)
-    group_name: Column = Column(String)
-    teacher_name: Column = Column(String)
-    faculty: Column = Column(String)
-    lesson_type: Column = Column(String)
-    numerator: Column = Column(Boolean)
-    denominator: Column = Column(Boolean)
-    first_group: Column = Column(Boolean)
-    second_group: Column = Column(Boolean)
-    day: Column = Column(Integer)
-    lesson_number: Column = Column(Integer)
+    id: Mapped[str] = mapped_column(primary_key=True)
+    username: Mapped[str]
+    action: Mapped[str]
+    date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    lesson_title: Mapped[str]
+    group_name: Mapped[str]
+    teacher_name: Mapped[str]
+    faculty: Mapped[str]
+    lesson_type: Mapped[str]
+    numerator: Mapped[bool]
+    denominator: Mapped[bool]
+    first_group: Mapped[bool]
+    second_group: Mapped[bool]
+    day: Mapped[int]
+    lesson_number: Mapped[int]

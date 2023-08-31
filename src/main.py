@@ -12,13 +12,8 @@ templates = Jinja2Templates(directory="./templates")
 app = FastAPI()
 
 
-origins: "list[str]" = [
-    "http://localhost:3000",
-    "http://192.168.0.103:3000",
-    "http://192.168.0.103:3000/",
+origins = [
     "https://mspu-schedule.netlify.app",
-    "https://web.postman.co",
-    "http://localhost:5173",
 ]
 app.add_middleware(
     CORSMiddleware,
