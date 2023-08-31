@@ -9,3 +9,4 @@ pydantic
 bcrypt
 passlib
 psycopg2
+dotenv
