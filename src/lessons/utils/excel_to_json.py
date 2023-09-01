@@ -21,19 +21,24 @@ def is_merged_sell(cell) -> bool:
 
 
 def lesson_to_dict(lesson: str, faculty=None, group_number=None):
-    # print(lesson)
     if lesson is None:
         return {"lesson": None}
     elif "СМГ" in lesson and group_number:
+
         if lesson.count("\n") > 1:
             lesson = lesson[::-1].replace("\n", " ", 1)[::-1]
         lesson_name, teachers = lesson.split("\n")
         teachers = teachers.split(", ")
         smg_teacher = teachers[[teachers.index(i) for i in teachers if "СМГ" in i][0]]
         teachers.remove(smg_teacher)
+        if len(teachers) == 1:
+            return {
+                "lesson_title": "Физическая культура",
+                "teacher_name": f"{teachers[0]}, {smg_teacher}",
+            }
         if faculty == "tbft":
             group_number = group_number - 2
-        elif group_number == 4 and faculty != "dino":
+        elif group_number == 4 and faculty != "ДиНО":
             return {
                 "lesson_title": "Физическая культура",
                 "teacher_name": f"{teachers[group_number - 2]}, {smg_teacher}",
@@ -48,7 +53,7 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
             "teacher_name": f"{teachers[group_number - 1]}, {smg_teacher}",
         }
     else:
-        positions = ("доц.", "пр.-ст.", "ст.пр.", "пр.", "проф.")
+        positions = ("доц.", "пр.-ст.", "ст.пр.", "ст. пр.", "ст. преп.", "преп.", "пр.", "проф.")
         lesson_types = (
             "ЛК",
             "ПЗ/СЗ",
@@ -87,7 +92,7 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
                 break
         lesson_name = lesson[:position_index].strip()
         lesson_teacher = lesson[position_index:].strip()
-        if faculty == "dino":
+        if faculty == "ДиНО":
             left_bracket_index = lesson_teacher.rfind("(")
             right_bracket_index = lesson_teacher.rfind(")")
             if (
@@ -117,15 +122,14 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
 
 
 def excel_to_json(filename: str, faculty: str) -> dict[str, [[dict[str, str]]]]:
-    print(filename)
     wb = load_workbook(filename)
     ws = wb.active
     schedule = {}
     course_numbers = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5}
     max_lessons = 6
     faculty_data = {
-        "tbfb": (5, 75, "4", "3"),
-        "dino": (4, 64, "3", "2"),
+        "tbfb": (4, 74, "4", "3"),
+        "ДиНО": (4, 64, "3", "2"),
         "tbft": (4, 72, "3", "2"),
     }
 
