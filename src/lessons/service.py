@@ -33,6 +33,7 @@ async def upload_excel_schedule(db: Session, file, faculty):
             for lesson in lessons:
                 lesson_number += 1
                 if isinstance(lesson, list):
+
                     for i in lesson:
                         if "lesson" in i:
                             continue
@@ -66,10 +67,10 @@ async def upload_excel_schedule(db: Session, file, faculty):
 
 
 async def get_lessons_by_teacher(teacher_name: str, db: Session):
-    last_name = next((i for i, c in enumerate(teacher_name) if c.isupper()), 0)
+    # last_name = next((i for i, c in enumerate(teacher_name) if c.isupper()), 0)
     teachers_lessons = (
         db.query(Lesson)
-        .filter(Lesson.teacher_name.like(f"%{teacher_name[last_name:]}"))
+        .filter(Lesson.teacher_name.like(f"%{teacher_name}%"))
         .order_by(Lesson.day, Lesson.lesson_number)
         .all()
     )
@@ -100,6 +101,7 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
 
 
 async def get_lessons_by_group(group_name: str, db: Session):
+    print(group_name)
     group_lessons = (
         db.query(Lesson)
         .filter(Lesson.group_name == group_name)
