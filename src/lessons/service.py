@@ -67,10 +67,10 @@ async def upload_excel_schedule(db: Session, file, faculty):
 
 
 async def get_lessons_by_teacher(teacher_name: str, db: Session):
-    # last_name = next((i for i, c in enumerate(teacher_name) if c.isupper()), 0)
+    last_name = next((i for i, c in enumerate(teacher_name) if c.isupper()), 0)
     teachers_lessons = (
         db.query(Lesson)
-        .filter(Lesson.teacher_name.like(f"%{teacher_name}%"))
+        .filter(Lesson.teacher_name.like(f"%{last_name}%"))
         .order_by(Lesson.day, Lesson.lesson_number)
         .all()
     )
