@@ -33,7 +33,6 @@ async def upload_excel_schedule(db: Session, file, faculty):
             for lesson in lessons:
                 lesson_number += 1
                 if isinstance(lesson, list):
-
                     for i in lesson:
                         if "lesson" in i:
                             continue
@@ -67,7 +66,9 @@ async def upload_excel_schedule(db: Session, file, faculty):
 
 
 async def get_lessons_by_teacher(teacher_name: str, db: Session):
-    last_name_start_index = next((i for i, c in enumerate(teacher_name) if c.isupper()), 0)
+    last_name_start_index = next(
+        (i for i, c in enumerate(teacher_name) if c.isupper()), 0
+    )
     teachers_lessons = (
         db.query(Lesson)
         .filter(Lesson.teacher_name.like(f"%{teacher_name[last_name_start_index:]}%"))
@@ -94,7 +95,7 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
             lessons = tmp_teachers_lessons[days][lessons_index]
             if len(lessons) >= 2:
                 tmp_teachers_lessons[days][lessons_index] = handle_combined_lessons(
-                    lessons
+                    lessons, 'teacher'
                 )
 
     return tmp_teachers_lessons
@@ -121,6 +122,14 @@ async def get_lessons_by_group(group_name: str, db: Session):
         day = lesson.day
         lesson_number = lesson.lesson_number
         tmp_group_lessons[get_day_display(day)][lesson_number].append(lesson)
+
+    for days in tmp_group_lessons:
+        for lessons_index in range(len(tmp_group_lessons[days])):
+            lessons = tmp_group_lessons[days][lessons_index]
+            if len(lessons) >= 2:
+                tmp_group_lessons[days][lessons_index] = handle_combined_lessons(
+                    lessons, 'group'
+                )
     return tmp_group_lessons
 
 
