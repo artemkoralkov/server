@@ -9,15 +9,17 @@ def combine_lessons(lesson_dicts, compare):
     lesson_ids = [lesson["id"] for lesson in lesson_dicts]
     common_lesson = lesson_dicts[0].copy()
     del common_lesson["id"]
-    if compare == 'teacher':
+    if compare == "teacher":
         del common_lesson["group_name"]
         return Lesson(
             id=", ".join(lesson_ids), group_name=", ".join(group_names), **common_lesson
         )
-    elif compare == 'group':
+    elif compare == "group":
         del common_lesson["teacher_name"]
         return Lesson(
-            id=", ".join(lesson_ids), teacher_name=", ".join(teacher_names), **common_lesson
+            id=", ".join(lesson_ids),
+            teacher_name=", ".join(teacher_names),
+            **common_lesson
         )
 
 
@@ -37,9 +39,7 @@ def handle_combined_lessons(lessons, compare):
             if len(unique_lessons) >= 2:
                 combined_lessons.append(combine_lessons(unique_lessons, compare))
             else:
-                combined_lessons.extend(
-                    [Lesson(**lesson) for lesson in unique_lessons]
-                )
+                combined_lessons.extend([Lesson(**lesson) for lesson in unique_lessons])
             unique_lessons = [lesson_dict]
 
     if len(unique_lessons) >= 2:
