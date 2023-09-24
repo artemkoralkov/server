@@ -1,5 +1,3 @@
-import json
-
 from openpyxl.reader.excel import load_workbook
 from openpyxl.utils import get_column_letter
 
@@ -56,7 +54,11 @@ def parse_teacher_name(string: str) -> str:
     prev_position_index = len(string)
     for position in positions:
         position_index = string.find(position)
-        if position_index != -1 and prev_position_index > position_index:
+        if (
+            position_index != -1
+            and prev_position_index > position_index
+            and string[position_index - 1] != "("
+        ):
             prev_position_index = position_index
     teacher = string[prev_position_index:].strip()
     if "(" in teacher:
@@ -81,11 +83,8 @@ def calculate_teachers_count(teachers: str) -> int:
 
 
 def split_list_by_parts(lst: list, parts: int) -> list:
-    part_size = len(lst) // parts
-    split_lists = []
-    for i in range(0, len(lst), part_size):
-        split_lists.append(lst[i : i + part_size])
-    return split_lists
+    k, m = divmod(len(lst), parts)
+    return [lst[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(parts)]
 
 
 def get_merged_cell_value(sheet, cell) -> str:
@@ -102,6 +101,7 @@ def is_merged_sell(cell) -> bool:
 
 
 def lesson_to_dict(lesson: str, faculty=None, group_number=None):
+    # print(lesson)
     if lesson is None:
         return {"lesson": None}
     elif "СМГ" in lesson and group_number:
@@ -140,6 +140,7 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
     else:
         # lesson = ' '.join(lesson.split())
         lesson_type = parse_lesson_type(lesson)
+        print(lesson_type)
         lesson_without_type = lesson.replace(lesson_type, "")
         lesson_teacher = parse_teacher_name(lesson_without_type)
         lesson_title = parse_lesson_title(
@@ -161,10 +162,11 @@ def lesson_to_dict(lesson: str, faculty=None, group_number=None):
         }
 
 
-# print(lesson_to_dict( "Основы психологии и педагогики (ЛК) (+ФиФ)\nдоц. Астрейко Е.С."))
-# print(lesson_to_dict( "История древнерусской
-# литературы и литературы XVIII века (ЛК)\nдоц. Чечко Т.Н./проф. Чайка Н.В.")) print(
-# lesson_to_dict( "Иностранный язык\nст. пр. Гуцко И.Н.,\nдоц. Чечко Т.Н. (+ФФК)"))
+# print(lesson_to_dict("Бел. язык (проф.лек.) (пз)                                                                                                                                                                                                                  доц.Прохоренко Л.В."))
+# print(lesson_to_dict("Иностранный язык (пз)                                                                                                                             англ. яз. - преп. Коцур А.С.,                                                                       нем.яз. (ТБФ, ФИФ) - доц.Чечко Т.Н.                                               "))
+# print(lesson_to_dict( "История древнерусской литературы и литературы XVIII
+# века (ЛК)\nдоц. Чечко Т.Н./проф. Чайка Н.В.")) print( lesson_to_dict( "Иностранный
+# язык\nст. пр. Гуцко И.Н.,\nдоц. Чечко Т.Н. (+ФФК)"))
 
 
 def excel_to_json(filename: str, faculty: str):
@@ -177,6 +179,7 @@ def excel_to_json(filename: str, faculty: str):
         "tbfb": (4, 74, "4", "3"),
         "ДиНО": (4, 64, "3", "2"),
         "ТБФ (технология)": (4, 72, "3", "2"),
+        "ФФК": (5, 74, "4", "3"),
     }
 
     (
@@ -187,7 +190,8 @@ def excel_to_json(filename: str, faculty: str):
     ) = faculty_data.get(faculty, (4, 74, "3", "2"))
     column = 4
     while ws[get_column_letter(column) + groups_names_start_row].value:
-        #print(ws[get_column_letter(column) + groups_names_start_row].value.split("\n"))
+        # print(ws[get_column_letter(column) + groups_names_start_row].value.split(
+        # "\n"))
         group_name = parse_grop_name(
             ws[get_column_letter(column) + groups_names_start_row].value
         )
@@ -195,6 +199,7 @@ def excel_to_json(filename: str, faculty: str):
             ws, ws[get_column_letter(column) + course_number_row]
         ).strip()
         current_group = f"{course_numbers[course_number]}/{group_name}"
+        print(current_group)
         schedule[current_group] = []
         for row in range(lessons_start_row, lessons_end_row, 2):
             upper_left_cell = ws[get_column_letter(column) + str(row)]
@@ -484,9 +489,14 @@ def excel_to_json(filename: str, faculty: str):
                 print("-----")
                 schedule[current_group].append(None)
         column += 3
-        if faculty == "tbft":
+        if faculty == "ТБФ (технология)":
             schedule[current_group].append([{"lesson": None}])
+        # print((json.dumps(schedule[current_group], ensure_ascii=False, indent=4)))
         schedule[current_group] = split_list_by_parts(
             schedule[current_group], max_lessons
         )
     return schedule
+
+
+# s = excel_to_json('../../Основное 2023-2024 с 18.09.xlsx', 'ФФ')
+# print(json.dumps(s, ensure_ascii=False, indent=4))

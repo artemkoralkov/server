@@ -36,31 +36,71 @@ async def upload_excel_schedule(db: Session, file, faculty):
                     for i in lesson:
                         if "lesson" in i:
                             continue
+                        if isinstance(i["teacher_name"], list):
+                            for teacher in i["teacher_name"]:
+                                tmp_lesson = Lesson(
+                                    id=str(uuid4()),
+                                    day=day,
+                                    lesson_number=lesson_number,
+                                    group_name=group,
+                                    faculty=faculty,
+                                    teacher_name=teacher,
+                                    lesson_type=i["lesson_type"],
+                                    lesson_title=i["lesson_title"],
+                                    numerator=i.get("numerator", False),
+                                    denominator=i.get("denominator", False),
+                                    first_group=i.get("first_group", False),
+                                    second_group=i.get("second_group", False),
+                                )
+                                db.add(tmp_lesson)
+                                db.commit()
+                                db.refresh(tmp_lesson)
+                        else:
+                            tmp_lesson = Lesson(
+                                id=str(uuid4()),
+                                day=day,
+                                lesson_number=lesson_number,
+                                group_name=group,
+                                faculty=faculty,
+                                **i,
+                            )
+                            db.add(tmp_lesson)
+                            db.commit()
+                            db.refresh(tmp_lesson)
+                else:
+                    if "lesson" in lesson:
+                        continue
+                    if isinstance(lesson["teacher_name"], list):
+                        for teacher in lesson["teacher_name"]:
+                            tmp_lesson = Lesson(
+                                id=str(uuid4()),
+                                day=day,
+                                lesson_number=lesson_number,
+                                group_name=group,
+                                faculty=faculty,
+                                teacher_name=teacher,
+                                lesson_type=lesson["lesson_type"],
+                                lesson_title=lesson["lesson_title"],
+                                numerator=lesson.get("numerator", False),
+                                denominator=lesson.get("denominator", False),
+                                first_group=lesson.get("first_group", False),
+                                second_group=lesson.get("second_group", False),
+                            )
+                            db.add(tmp_lesson)
+                            db.commit()
+                            db.refresh(tmp_lesson)
+                    else:
                         tmp_lesson = Lesson(
                             id=str(uuid4()),
                             day=day,
                             lesson_number=lesson_number,
                             group_name=group,
                             faculty=faculty,
-                            **i,
+                            **lesson,
                         )
                         db.add(tmp_lesson)
                         db.commit()
                         db.refresh(tmp_lesson)
-                else:
-                    if "lesson" in lesson:
-                        continue
-                    tmp_lesson = Lesson(
-                        id=str(uuid4()),
-                        day=day,
-                        lesson_number=lesson_number,
-                        group_name=group,
-                        faculty=faculty,
-                        **lesson,
-                    )
-                    db.add(tmp_lesson)
-                    db.commit()
-                    db.refresh(tmp_lesson)
             day += 1
     return 1
 
@@ -95,14 +135,13 @@ async def get_lessons_by_teacher(teacher_name: str, db: Session):
             lessons = tmp_teachers_lessons[days][lessons_index]
             if len(lessons) >= 2:
                 tmp_teachers_lessons[days][lessons_index] = handle_combined_lessons(
-                    lessons, 'teacher'
+                    lessons, "teacher"
                 )
 
     return tmp_teachers_lessons
 
 
 async def get_lessons_by_group(group_name: str, db: Session):
-    print(group_name)
     group_lessons = (
         db.query(Lesson)
         .filter(Lesson.group_name == group_name)
@@ -121,14 +160,16 @@ async def get_lessons_by_group(group_name: str, db: Session):
     for lesson in group_lessons:
         day = lesson.day
         lesson_number = lesson.lesson_number
+        print(lesson.day, lesson.lesson_title)
         tmp_group_lessons[get_day_display(day)][lesson_number].append(lesson)
 
     for days in tmp_group_lessons:
+        print(days)
         for lessons_index in range(len(tmp_group_lessons[days])):
             lessons = tmp_group_lessons[days][lessons_index]
             if len(lessons) >= 2:
                 tmp_group_lessons[days][lessons_index] = handle_combined_lessons(
-                    lessons, 'group'
+                    lessons, "group"
                 )
     return tmp_group_lessons
 
