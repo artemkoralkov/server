@@ -262,6 +262,7 @@ async def edit_lesson(
     db.query(Lesson).filter(Lesson.id == lesson_id).update(
         update_data, synchronize_session=False
     )
+    db.add(log)
     db.commit()
     db.refresh(lesson)
     db.refresh(log)
