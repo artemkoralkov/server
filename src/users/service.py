@@ -1,7 +1,10 @@
 from uuid import uuid4
+
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
+from src.users.exceptions import UserNotFound
 from src.users.models import User
 from src.users.schemas import UserCreate
 
@@ -40,5 +43,10 @@ async def login(password: str, db: Session):
 
 
 async def delete_user_by_name(username: str, db: Session):
-    db.query(User).filter(User.username == username).delete()
+    user = db.scalars(select(User).where(User.username == username)).one_or_none()
+    if not user:
+        raise UserNotFound
+    db.delete(user)
+    # db.query(User).filter(User.username == username).delete()
     db.commit()
+

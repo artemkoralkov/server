@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
+from src.lessons.exceptions import LessonNotFound
 from src.lessons.models import Lesson
 from src.lessons.schemas import LessonCreate, Lesson as PydanticLesson
 from src.lessons.utils.excel_to_json import excel_to_json
@@ -224,6 +225,8 @@ async def get_lessons_by_faculty(faculty: str, db: Session):
 
 async def delete_lesson(db: Session, lesson_id: str, username: str):
     lesson = db.get(Lesson, lesson_id)
+    if not lesson:
+        raise LessonNotFound
     lesson_data = PydanticLesson.model_validate(lesson).model_dump()
     lesson_data.pop("id")
     log: Log = Log(

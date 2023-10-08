@@ -1,7 +1,8 @@
 from uuid import uuid4
 from sqlalchemy.orm import Session
-from sqlalchemy import func, alias
+from sqlalchemy import func, alias, select
 
+from src.teachers.exceptions import TeacherAlreadyExists, TeacherNotFound
 from src.teachers.models import Teacher
 
 
@@ -29,6 +30,9 @@ async def add_teachers(db: Session, teachers):
 
 
 async def add_teacher(db: Session, teacher) -> Teacher:
+    db_teacher = await get_teacher_by_name(db, teacher.teacher_name)
+    if db_teacher:
+        raise TeacherAlreadyExists
     tmp_teacher: Teacher = Teacher(id=str(uuid4()), **teacher.dict())
     db.add(tmp_teacher)
     db.commit()
@@ -37,7 +41,11 @@ async def add_teacher(db: Session, teacher) -> Teacher:
 
 
 async def delete_teacher(db: Session, teacher_id) -> None:
-    db.query(Teacher).filter(Teacher.id == teacher_id).delete()
+    teacher = db.scalars(select(Teacher).where(Teacher.id == teacher_id)).one_or_none()
+    if not teacher:
+        raise TeacherNotFound
+    db.delete(teacher)
+    # db.query(Teacher).filter(Teacher.id == teacher_id).delete()
     db.commit()
 
 
