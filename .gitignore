@@ -164,3 +164,7 @@ cython_debug/
 #.idea/
 
 /.deta/
+.*db
+test.py
+test1.py
+old_excel_to_json.py
